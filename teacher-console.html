@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>교수자 콘솔</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* 레이아웃: 위에서 아래로 불러오기 → 조별 요약 → 학생별 평가. 학생 카드는 왼쪽 기록, 오른쪽 채점 */
+:root{--green:#1f5145;--green2:#2e6b5c;--head:#1f5145;--gold:#b5781f;--gold2:#e9b45a;--mint:#e6efec;--beige:#f3e6cf;--ink:#1d2b27;--muted:#5d6f69;--line:#d5e0dc;--bg:#fbfaf6;--card:#ffffff;--field:#ffffff;--zebra:#f5f8f7;--on:#ffffff;--warn:#a5431f;--warnbg:#fbe9e1}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--green:#2f7a66;--green2:#7cc4ad;--head:#9fd8c5;--gold:#e0a54e;--gold2:#f0c274;--mint:#1f2e2a;--beige:#3a3123;--ink:#e3ece8;--muted:#9fb3ac;--line:#2f403b;--bg:#111816;--card:#18221f;--field:#1d2925;--zebra:#1b2623;--on:#ffffff;--warn:#ffab8f;--warnbg:#3a2219;color-scheme:dark}}
+:root[data-theme="dark"]{--green:#2f7a66;--green2:#7cc4ad;--head:#9fd8c5;--gold:#e0a54e;--gold2:#f0c274;--mint:#1f2e2a;--beige:#3a3123;--ink:#e3ece8;--muted:#9fb3ac;--line:#2f403b;--bg:#111816;--card:#18221f;--field:#1d2925;--zebra:#1b2623;--on:#ffffff;--warn:#ffab8f;--warnbg:#3a2219;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans KR",system-ui,sans-serif;font-size:15px;line-height:1.55}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 16px 80px}
+.eyebrow{color:var(--gold);font-weight:700;font-size:13px}
+h1{color:var(--head);font-size:26px;margin:4px 0 6px;text-wrap:balance}
+h2{color:var(--head);font-size:19px;margin:0 0 8px}
+.lead{color:var(--muted);margin:0 0 18px;font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px}
+.btn{border:0;border-radius:8px;padding:9px 14px;font:inherit;font-weight:700;cursor:pointer;background:var(--green);color:var(--on)}
+.btn.ghost{background:transparent;color:var(--head);border:1px solid var(--head)}
+.btn.small{padding:4px 10px;font-size:13px}
+.btn:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.drop{border:2px dashed var(--line);border-radius:12px;padding:22px;text-align:center;color:var(--muted);margin-bottom:12px}
+.drop.over{border-color:var(--green);background:var(--mint)}
+.drop b{color:var(--head)}
+.status{font-size:14px;margin-top:8px}
+.status .bad{color:var(--warn)}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+th{background:var(--green);color:var(--on);text-align:left;padding:7px 8px;font-weight:500;white-space:nowrap}
+td{border-bottom:1px solid var(--line);padding:7px 8px;vertical-align:top}
+tr:nth-child(even) td{background:var(--zebra)}
+.pill{display:inline-block;border-radius:999px;padding:1px 9px;font-size:12px;font-weight:700;background:var(--mint);color:var(--head);margin:1px 2px 1px 0;white-space:nowrap}
+.pill.warn{background:var(--warnbg);color:var(--warn)}
+.warns{margin:10px 0 0;padding-left:18px;color:var(--warn);font-size:14px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+select,input[type=text],input[type=number],textarea{font:inherit;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--field);color:var(--ink)}
+.student{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;border-top:2px solid var(--green);padding-top:14px;margin-top:18px}
+@media (max-width:820px){.student{grid-template-columns:1fr}}
+.who{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.who b{font-size:18px;color:var(--head)}
+.who span{color:var(--muted);font-size:13px}
+.entry{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;background:var(--card)}
+.entry h4{margin:0 0 4px;font-size:15px}
+.entry .meta{font-size:13px;color:var(--muted)}
+.entry .judge{margin-top:6px;font-size:14px}
+.entry .mark{font-weight:700;font-size:17px;color:var(--gold);margin-right:6px}
+.entry a{color:var(--green2);word-break:break-all}
+details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:6px}
+.ai{font-size:13px;border-top:1px solid var(--line);margin-top:6px;padding-top:6px}
+.ai table{font-size:12px;min-width:480px}
+.ai h3{font-size:14px;color:var(--head);margin:10px 0 4px}
+.ai ul,.ai ol{margin:4px 0 8px;padding-left:20px}
+.grade{background:var(--mint);border-radius:10px;padding:12px}
+.grade .crit{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;align-items:center;margin-bottom:6px}
+.grade .crit label{font-size:14px}
+.grade .crit small{display:block;color:var(--muted);font-size:12px}
+.grade select{min-width:70px}
+.grade textarea{width:100%;min-height:70px;margin-top:6px}
+.total{font-weight:700;color:var(--head);margin-top:6px}
+.rubric{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr) 90px auto;gap:6px 8px;align-items:center}
+.rubric input{width:100%}
+.empty{color:var(--muted);text-align:center;padding:26px 10px}
+.ask{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--card);border-top:2px solid var(--green);box-shadow:0 -6px 24px rgba(0,0,0,.18);padding:14px max(16px,env(safe-area-inset-left,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-right,0px));display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap}
+.ask p{margin:0;font-weight:500}
+.hidden{display:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media print{.bar,.drop,.filters,#rubricCard,.ask,details summary{display:none!important}.card{border:0}.student{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">커뮤니케이션이 할 수 있는 것과 없는 것</div>
+  <h1>교수자 콘솔 · 정보 접촉 기록 평가</h1>
+  <p class="lead">학생들이 LMS에 올린 제출 파일(CSV)을 불러와 조별로 모아 보고 채점합니다. 파일과 점수는 이 브라우저 안에만 있고 어디로도 전송되지 않습니다.</p>
+
+  <section class="card">
+    <h2>제출 파일 불러오기</h2>
+    <div class="drop" id="drop">
+      <p style="margin:0 0 8px"><b>CSV 파일들을 여기에 끌어다 놓으세요</b></p>
+      <p style="margin:0 0 10px;font-size:13px">LMS에서 받은 압축 파일은 먼저 풀어 주세요. 여러 파일을 한 번에 넣을 수 있습니다.</p>
+      <label class="btn ghost" for="files" style="display:inline-block">파일 고르기</label>
+      <input type="file" id="files" accept=".csv,text/csv" multiple class="sr">
+    </div>
+    <div class="bar">
+      <button class="btn ghost" id="demo">예시 데이터로 보기</button>
+      <button class="btn ghost" id="exportAll">전체 기록 CSV</button>
+      <button class="btn" id="exportGrades">성적 CSV 내려받기</button>
+      <button class="btn ghost" id="clear">불러온 기록 지우기</button>
+    </div>
+    <div class="status" id="status"></div>
+  </section>
+
+  <section class="card">
+    <h2>조별 요약</h2>
+    <div class="tablewrap"><table><thead><tr><th>조</th><th>이슈</th><th>학생</th><th>기록</th><th>신뢰 O/△/X</th><th>문제 ①/②/③</th><th>채점</th></tr></thead><tbody id="teams"></tbody></table></div>
+    <ul class="warns" id="warns"></ul>
+  </section>
+
+  <section class="card" id="rubricCard">
+    <details>
+      <summary style="font-size:15px;color:var(--head);font-weight:700">평가 기준 바꾸기</summary>
+      <p class="lead" style="margin-top:8px">항목 이름, 설명, 만점을 고칠 수 있습니다. 바꾸면 이미 넣은 점수는 같은 순서의 항목에 그대로 남습니다.</p>
+      <div class="rubric" id="rubric"></div>
+      <div class="bar" style="margin-top:8px"><button class="btn ghost small" id="addCrit">항목 추가</button><button class="btn ghost small" id="resetRubric">기본 기준으로</button></div>
+    </details>
+  </section>
+
+  <section class="card">
+    <h2>학생별 평가</h2>
+    <div class="filters">
+      <label for="fTeam" class="sr">조 고르기</label><select id="fTeam"></select>
+      <label for="fState" class="sr">채점 상태</label><select id="fState"><option value="">전체</option><option value="todo">채점 안 함</option><option value="done">채점함</option><option value="warn">확인 필요</option></select>
+      <label for="fq" class="sr">이름·학번 찾기</label><input type="text" id="fq" placeholder="이름·학번 찾기">
+      <span id="count" style="color:var(--muted);font-size:13px"></span>
+    </div>
+    <div id="students"><p class="empty">제출 파일을 불러오면 학생별 기록과 채점 칸이 여기에 나옵니다. 먼저 보려면 '예시 데이터로 보기'를 누르세요.</p></div>
+  </section>
+</div>
+
+<script>
+const FORM_ID = "정보접촉기록 v2";
+const GOAL = 2;
+const DEFAULT_RUBRIC = [
+  {name:"자료 선택", desc:"출처가 분명한 자료를 골랐고 매체·글쓴이·날짜를 정확히 적었는가", max:5},
+  {name:"근거 분석", desc:"근거 유형과 빠진 정보를 제대로 짚었는가", max:5},
+  {name:"판단 이유", desc:"신뢰 판단의 이유가 근거와 맞물리는가", max:5},
+  {name:"문제 진단", desc:"①②③ 분류가 커뮤니케이션의 역할과 연결되는가", max:5}
+];
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let db = {rows:[], files:[], rubric:DEFAULT_RUBRIC.map(c => ({...c})), grades:{}};
+function save(){ try{ localStorage.setItem("teacherConsole", JSON.stringify(db)); }catch(e){ $("status").innerHTML = "<span class='bad'>브라우저 저장 공간이 막혀 있어, 새로고침하면 불러온 기록과 점수가 사라집니다.</span>"; } }
+function load(){ try{ const v = JSON.parse(localStorage.getItem("teacherConsole")); if (v && Array.isArray(v.rows)) db = Object.assign(db, v); }catch(e){} }
+
+function askConfirm(msg, yes, no, onYes){
+  document.querySelectorAll(".ask").forEach(x => x.remove());
+  const bar = document.createElement("div"); bar.className = "ask"; bar.setAttribute("role", "alertdialog");
+  const p = document.createElement("p"); p.textContent = msg;
+  const y = document.createElement("button"); y.className = "btn"; y.textContent = yes;
+  const n = document.createElement("button"); n.className = "btn ghost"; n.textContent = no;
+  y.onclick = () => { bar.remove(); onYes(); }; n.onclick = () => bar.remove();
+  bar.append(p, y, n); document.body.appendChild(bar); y.focus();
+}
+
+// CSV (RFC 4180: 따옴표, 줄바꿈이 든 칸, BOM)
+function parseCSV(text){
+  text = text.replace(/^﻿/, "");
+  const rows = []; let row = [], f = "", q = false;
+  for (let i = 0; i < text.length; i++){
+    const c = text[i];
+    if (q){
+      if (c === '"'){ if (text[i+1] === '"'){ f += '"'; i++; } else q = false; }
+      else f += c;
+    } else if (c === '"') q = true;
+    else if (c === ","){ row.push(f); f = ""; }
+    else if (c === "\n" || c === "\r"){ if (c === "\r" && text[i+1] === "\n") i++; row.push(f); rows.push(row); row = []; f = ""; }
+    else f += c;
+  }
+  if (f !== "" || row.length){ row.push(f); rows.push(row); }
+  return rows.filter(r => r.some(x => x !== ""));
+}
+const csvCell = s => '"' + String(s ?? "").replace(/"/g, '""') + '"';
+function download(name, rows){
+  const blob = new Blob(["﻿" + rows.map(r => r.map(csvCell).join(",")).join("\r\n")], {type:"text/csv"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; a.click();
+}
+
+function ingest(name, text){
+  const rows = parseCSV(text);
+  if (!rows.length) return {name, ok:false, why:"빈 파일"};
+  const head = rows[0];
+  if (head[0] !== "양식") return {name, ok:false, why:"정보 접촉 기록 제출 파일이 아님"};
+  const idx = k => head.indexOf(k);
+  const recs = rows.slice(1).filter(r => r[0] === FORM_ID).map(r => {
+    const o = {}; head.forEach((h, i) => o[h] = r[i] ?? ""); o._file = name; return o;
+  });
+  if (!recs.length) return {name, ok:false, why:"기록이 없거나 양식 버전이 다름"};
+  // 같은 학생이 다시 낸 파일이면 그 학생의 이전 기록을 새 파일로 바꾼다
+  const sid = recs[0]["학번"];
+  const before = db.rows.filter(x => x["학번"] === sid);
+  const newer = !before.length || (recs.map(r => r["기록 시각"]).sort().pop() || "") >= (before.map(r => r["기록 시각"]).sort().pop() || "");
+  if (!newer) return {name, ok:false, why:"같은 학번(" + sid + ")의 더 최근 파일이 이미 있음"};
+  db.rows = db.rows.filter(x => x["학번"] !== sid).concat(recs);
+  return {name, ok:true, n:recs.length, replaced: before.length > 0, who: recs[0]["이름"]};
+}
+async function readFiles(list){
+  const results = [];
+  for (const f of list){
+    try { results.push(ingest(f.name, await f.text())); } catch(e){ results.push({name:f.name, ok:false, why:"읽을 수 없음"}); }
+  }
+  save(); render();
+  const ok = results.filter(r => r.ok), bad = results.filter(r => !r.ok);
+  $("status").innerHTML = "파일 " + results.length + "개 중 " + ok.length + "개를 불러왔습니다." +
+    (ok.some(r => r.replaced) ? " 다시 낸 학생은 새 파일로 바꿨습니다." : "") +
+    (bad.length ? "<br><span class='bad'>불러오지 못한 파일: " + bad.map(r => esc(r.name) + " (" + esc(r.why) + ")").join(", ") + "</span>" : "");
+}
+$("files").onchange = e => { readFiles([...e.target.files]); e.target.value = ""; };
+const drop = $("drop");
+["dragenter","dragover"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave","drop"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", e => readFiles([...e.dataTransfer.files].filter(f => /\.csv$/i.test(f.name))));
+
+// 묶기
+function students(){
+  const by = {};
+  db.rows.forEach(r => {
+    const k = r["학번"];
+    (by[k] = by[k] || {sid:k, name:r["이름"], team:r["조"], issue:r["이슈"], file:r._file, entries:[]}).entries.push(r);
+  });
+  return Object.values(by).sort((a, b) => teamNo(a.team) - teamNo(b.team) || a.name.localeCompare(b.name, "ko"));
+}
+const teamNo = t => parseInt(t, 10) || 99;
+function teamsOf(list){
+  const t = {};
+  list.forEach(s => (t[s.team] = t[s.team] || []).push(s));
+  return t;
+}
+function issuesIn(list){ return [...new Set(list.map(s => s.issue))]; }
+function majorityIssue(list){ const c = {}; list.forEach(s => c[s.issue] = (c[s.issue] || 0) + 1); return Object.entries(c).sort((a, b) => b[1] - a[1])[0]?.[0] || ""; }
+function warningsFor(s, teamList){
+  const w = [];
+  if (s.entries.length < GOAL) w.push("기록 " + s.entries.length + "개");
+  if (teamList && issuesIn(teamList).length > 1 && s.issue !== majorityIssue(teamList)) w.push("조원과 다른 이슈");
+  if (s.entries.some(e => !e["AI 분석 원문"].trim())) w.push("AI 원문 없음");
+  if (s.entries.some(e => Number(e["근거 수"]) === 0)) w.push("근거 0건");
+  return w;
+}
+function gradeOf(sid){ return db.grades[sid] || (db.grades[sid] = {scores:[], comment:""}); }
+function graded(sid){ const g = db.grades[sid]; return g && db.rubric.every((c, i) => g.scores[i] !== undefined && g.scores[i] !== ""); }
+function total(sid){ const g = db.grades[sid]; return g ? db.rubric.reduce((a, c, i) => a + (Number(g.scores[i]) || 0), 0) : 0; }
+const maxTotal = () => db.rubric.reduce((a, c) => a + Number(c.max || 0), 0);
+
+// 그리기
+function render(){
+  const list = students(), teams = teamsOf(list);
+  $("teams").innerHTML = Object.keys(teams).sort((a, b) => teamNo(a) - teamNo(b)).map(t => {
+    const ss = teams[t], es = ss.flatMap(s => s.entries);
+    const cnt = (k, v) => es.filter(e => e[k].startsWith(v)).length;
+    const iss = issuesIn(ss);
+    return "<tr><td><b>" + esc(t) + "</b></td><td>" + iss.map(x => "<span class='pill" + (iss.length > 1 ? " warn" : "") + "'>" + esc(x) + "</span>").join("") +
+      "</td><td>" + ss.map(s => esc(s.name) + (s.entries.length < GOAL ? "<span class='pill warn'>" + s.entries.length + "</span>" : "")).join(", ") +
+      "</td><td>" + es.length + "</td><td>" + cnt("신뢰","O") + " / " + cnt("신뢰","△") + " / " + cnt("신뢰","X") +
+      "</td><td>" + cnt("문제 유형","①") + " / " + cnt("문제 유형","②") + " / " + cnt("문제 유형","③") +
+      "</td><td>" + ss.filter(s => graded(s.sid)).length + " / " + ss.length + "</td></tr>";
+  }).join("") || "<tr><td colspan='7' class='empty'>불러온 기록이 없습니다.</td></tr>";
+  const w = [];
+  Object.entries(teams).forEach(([t, ss]) => { if (issuesIn(ss).length > 1) w.push(t + ": 조원끼리 이슈가 다릅니다 (" + issuesIn(ss).join(", ") + ")"); });
+  list.forEach(s => { if (s.entries.length < GOAL) w.push(s.team + " " + s.name + ": 정보를 " + s.entries.length + "개만 기록했습니다"); });
+  $("warns").innerHTML = w.map(x => "<li>" + esc(x) + "</li>").join("");
+  const fT = $("fTeam"), prev = fT.value;
+  fT.innerHTML = "<option value=''>모든 조</option>" + Object.keys(teams).sort((a, b) => teamNo(a) - teamNo(b)).map(t => "<option>" + esc(t) + "</option>").join("");
+  fT.value = [...fT.options].some(o => o.value === prev) ? prev : "";
+  renderRubric(); renderStudents();
+}
+function renderStudents(){
+  const list = students(), teams = teamsOf(list);
+  const fT = $("fTeam").value, fS = $("fState").value, q = $("fq").value.trim();
+  const shown = list.filter(s => (!fT || s.team === fT) && (!q || s.name.includes(q) || s.sid.includes(q)) &&
+    (!fS || (fS === "done" && graded(s.sid)) || (fS === "todo" && !graded(s.sid)) || (fS === "warn" && warningsFor(s, teams[s.team]).length)));
+  $("count").textContent = list.length ? shown.length + "명 표시 / 전체 " + list.length + "명" : "";
+  if (!list.length){ $("students").innerHTML = "<p class='empty'>제출 파일을 불러오면 학생별 기록과 채점 칸이 여기에 나옵니다. 먼저 보려면 '예시 데이터로 보기'를 누르세요.</p>"; return; }
+  $("students").innerHTML = shown.map(s => {
+    const g = gradeOf(s.sid), warns = warningsFor(s, teams[s.team]);
+    const entries = s.entries.slice().sort((a, b) => Number(a["번호"]) - Number(b["번호"])).map(e =>
+      "<div class='entry'><h4>" + esc(e["번호"]) + ". " + esc(e["매체"]) + (e["글쓴이"] ? " · " + esc(e["글쓴이"]) : "") + "</h4>" +
+      "<div class='meta'>" + esc(e["날짜"] || "날짜 없음") + (e["링크"] ? " · <a href='" + esc(e["링크"]) + "' target='_blank' rel='noopener'>원문 링크</a>" : "") +
+      " · 근거 " + esc(e["근거 수"]) + "건" + (e["근거 유형"] ? " (" + esc(e["근거 유형"]) + ")" : "") + (e["사용한 AI"] ? " · " + esc(e["사용한 AI"]) : "") + "</div>" +
+      "<div class='judge'><span class='mark'>" + esc(e["신뢰"]) + "</span>" + esc(e["이유"]) + "<br><span class='pill'>" + esc(e["문제 유형"]) + "</span>" +
+      (e["처음 접한 곳"] ? "<span class='pill'>" + esc(e["처음 접한 곳"]) + "</span>" : "") + "</div>" +
+      (e["AI 분석 원문"].trim() ? "<details><summary>AI 분석 원문 보기</summary><div class='ai'>" + md(e["AI 분석 원문"]) + "</div></details>" : "") + "</div>"
+    ).join("");
+    const crit = db.rubric.map((c, i) => {
+      const opts = ["<option value=''>-</option>"].concat(Array.from({length: Number(c.max) + 1}, (_, v) => "<option" + (String(g.scores[i]) === String(v) ? " selected" : "") + ">" + v + "</option>")).join("");
+      return "<div class='crit'><label for='g_" + esc(s.sid) + "_" + i + "'>" + esc(c.name) + "<small>" + esc(c.desc) + "</small></label><select id='g_" + esc(s.sid) + "_" + i + "' data-sid='" + esc(s.sid) + "' data-i='" + i + "'>" + opts + "</select></div>";
+    }).join("");
+    return "<div class='student'><div><div class='who'><b>" + esc(s.name) + "</b><span>" + esc(s.sid) + " · " + esc(s.team) + " · " + esc(s.issue) + "</span>" +
+      warns.map(x => "<span class='pill warn'>" + esc(x) + "</span>").join("") + "</div>" + entries + "</div>" +
+      "<div class='grade'>" + crit + "<label for='c_" + esc(s.sid) + "' style='font-size:14px'>코멘트</label><textarea id='c_" + esc(s.sid) + "' data-sid='" + esc(s.sid) + "'>" + esc(g.comment) + "</textarea>" +
+      "<div class='total' id='t_" + esc(s.sid) + "'>합계 " + total(s.sid) + " / " + maxTotal() + "</div></div></div>";
+  }).join("") || "<p class='empty'>조건에 맞는 학생이 없습니다.</p>";
+  document.querySelectorAll(".grade select").forEach(el => el.onchange = () => {
+    const g = gradeOf(el.dataset.sid); g.scores[+el.dataset.i] = el.value === "" ? "" : Number(el.value); save();
+    $("t_" + el.dataset.sid).textContent = "합계 " + total(el.dataset.sid) + " / " + maxTotal(); renderTeamsOnly();
+  });
+  document.querySelectorAll(".grade textarea").forEach(el => el.oninput = () => { gradeOf(el.dataset.sid).comment = el.value; save(); });
+}
+function renderTeamsOnly(){ const y = scrollY; const f = [$("fTeam").value, $("fState").value]; render(); $("fTeam").value = f[0]; $("fState").value = f[1]; renderStudents(); scrollTo(0, y); }
+["fTeam","fState"].forEach(id => $(id).onchange = renderStudents);
+$("fq").oninput = renderStudents;
+
+function renderRubric(){
+  $("rubric").innerHTML = "<b style='font-size:13px'>항목</b><b style='font-size:13px'>설명</b><b style='font-size:13px'>만점</b><span></span>" + db.rubric.map((c, i) =>
+    "<input type='text' aria-label='항목 이름' data-i='" + i + "' data-k='name' value='" + esc(c.name) + "'>" +
+    "<input type='text' aria-label='항목 설명' data-i='" + i + "' data-k='desc' value='" + esc(c.desc) + "'>" +
+    "<input type='number' aria-label='만점' min='1' max='20' data-i='" + i + "' data-k='max' value='" + esc(c.max) + "'>" +
+    "<button class='btn ghost small' data-del='" + i + "'>빼기</button>").join("");
+  $("rubric").querySelectorAll("input").forEach(el => el.onchange = () => {
+    const c = db.rubric[+el.dataset.i]; c[el.dataset.k] = el.dataset.k === "max" ? Math.max(1, Math.min(20, Number(el.value) || 1)) : el.value; save(); render();
+  });
+  $("rubric").querySelectorAll("[data-del]").forEach(b => b.onclick = () => {
+    const i = +b.dataset.del;
+    askConfirm("'" + db.rubric[i].name + "' 항목과 그 점수를 뺄까요?", "빼기", "취소", () => { db.rubric.splice(i, 1); Object.values(db.grades).forEach(g => g.scores.splice(i, 1)); save(); render(); });
+  });
+}
+$("addCrit").onclick = () => { db.rubric.push({name:"새 항목", desc:"", max:5}); save(); render(); };
+$("resetRubric").onclick = () => askConfirm("평가 기준을 기본 4개 항목으로 되돌릴까요? 넣은 점수는 순서대로 남습니다.", "되돌리기", "취소", () => { db.rubric = DEFAULT_RUBRIC.map(c => ({...c})); save(); render(); });
+
+// 내보내기
+$("exportGrades").onclick = () => {
+  const list = students(); if (!list.length){ $("status").textContent = "불러온 기록이 없습니다."; return; }
+  download("정보접촉기록_성적.csv", [["조","이름","학번","이슈","기록 수"].concat(db.rubric.map(c => c.name + "(" + c.max + ")"), ["합계(" + maxTotal() + ")","코멘트","확인 필요"])]
+    .concat(list.map(s => { const g = db.grades[s.sid] || {scores:[], comment:""}; return [s.team, s.name, s.sid, s.issue, s.entries.length].concat(db.rubric.map((c, i) => g.scores[i] ?? ""), [total(s.sid), g.comment, warningsFor(s, teamsOf(list)[s.team]).join("; ")]); })));
+};
+$("exportAll").onclick = () => {
+  if (!db.rows.length){ $("status").textContent = "불러온 기록이 없습니다."; return; }
+  const head = Object.keys(db.rows[0]).filter(k => k !== "_file");
+  download("정보접촉기록_전체.csv", [head.concat("파일")].concat(db.rows.map(r => head.map(k => r[k]).concat(r._file))));
+};
+$("clear").onclick = () => askConfirm("불러온 제출 기록과 넣은 점수·코멘트를 모두 지울까요? 평가 기준은 남습니다.", "모두 지우기", "취소", () => { db.rows = []; db.grades = {}; save(); render(); $("status").textContent = "지웠습니다."; });
+
+// 예시 데이터 (화면 확인용, 실제 학생 아님)
+$("demo").onclick = () => {
+  const mk = (team, name, sid, issue, items) => items.map((it, i) => ({"양식":FORM_ID,"조":team,"이슈":issue,"이름":name,"학번":sid,"번호":String(i + 1),"매체":it[0],"글쓴이":it[1],"날짜":it[2],"링크":it[3],"근거 수":String(it[4]),"근거 유형":it[5],"신뢰":it[6],"이유":it[7],"처음 접한 곳":it[8],"문제 유형":it[9],"사용한 AI":it[10],"기록 시각":"2026-11-04T05:0" + i + ":00Z","AI 분석 원문":"**출력 1-2. 근거 목록**\n\n| 번호 | 근거 내용 | 근거 유형 | 원출처가 적혀 있나 |\n|---|---|---|---|\n| 1 | (예시) " + it[0] + " 기사 속 근거 | " + it[5].split(" ")[0] + " | 이름만 있음 |\n\n**출력 1-4. 확인 질문**\n1. (예시) 원자료는 무엇인가?", _file:"예시.csv"}));
+  const ex = [].concat(
+    mk("1조","예시학생 가","000000001","04 수입 식품 불안",[["세계일보","정재영","2024-10-04","https://www.segye.com/newsView/20241004506536",3,"통계·수치 2; 기관 발표 1","O","식약처 조사 수치라 믿을 만하다","수업","③ 구조 문제","전북대 AI"],["뉴시스","홍세희","2025-09-07","https://www.newsis.com/view/NISX20250902_0003313017",4,"기관 발표 3; 통계·수치 1","O","공식 검사 결과를 전한다","검색","② 행동이 안 바뀜","Gemini"]]),
+    mk("1조","예시학생 나","000000002","04 수입 식품 불안",[["뉴스토마토","유승호","2021-05-24","https://newstomato.com/ReadNews.aspx?no=1046361",3,"통계·수치 2; 개인 사례·체험담 1","△","오래된 기사다","알고리즘 추천","① 정보가 틀림·과장","ChatGPT"]]),
+    mk("2조","예시학생 다","000000003","05 비만치료제",[["인사이트","황수진","2025-04-15","https://www.insight.co.kr/news/499087",6,"개인 사례·체험담 3; 통계·수치 1; 기관 발표 1; 근거 없이 주장만 1","△","체험담 위주다","알고리즘 추천","① 정보가 틀림·과장","전북대 AI"],["데일리팜","이탁순","2025-10-20","https://dailypharm.com/user/news/1181",2,"기관 발표 2","O","식약처 국감 자료","수업","③ 구조 문제","전북대 AI"]]),
+    mk("2조","예시학생 라","000000004","06 러닝·근력운동",[["뉴시스","박대로","2024-10-08","https://www.newsis.com/view/NISX20241008_0002912290",3,"기관 발표 2; 실명 전문가 인용 1","O","지자체 사례가 구체적이다","지인 공유","③ 구조 문제","Gemini"],["세계일보","이복진","2026-10-19","https://www.segye.com/newsView/20261018512501",2,"통계·수치 1; 실명 전문가 인용 1","O","심평원 통계","검색","② 행동이 안 바뀜","Gemini"]])
+  );
+  db.rows = db.rows.filter(r => r._file !== "예시.csv").concat(ex); save(); render();
+  $("status").textContent = "예시 학생 4명을 불러왔습니다. 이름이 '예시학생'인 기록은 화면 확인용이며, '불러온 기록 지우기'로 지울 수 있습니다.";
+};
+
+// AI 원문 표시 (학생 페이지와 같은 규칙)
+function inl(s){ return esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>"); }
+function md(src){
+  const L = src.replace(/\r/g, "").split("\n"); let h = "", i = 0;
+  const cells = r => r.replace(/^\||\|$/g, "").split("|").map(x => x.trim());
+  while (i < L.length){
+    const l = L[i].trim();
+    if (l.startsWith("|")){
+      const rows = []; while (i < L.length && L[i].trim().startsWith("|")) rows.push(L[i++].trim());
+      let t = "<div class='tablewrap'><table>";
+      rows.forEach((r, k) => { if (/^\|?[\s:|-]+$/.test(r)) return; const tag = k === 0 ? "th" : "td"; t += "<tr>" + cells(r).map(x => "<"+tag+">"+inl(x)+"</"+tag+">").join("") + "</tr>"; });
+      h += t + "</table></div>"; continue;
+    }
+    if (/^#{1,6}\s/.test(l) || /^\*\*[^*]+\*\*$/.test(l)){ h += "<h3>" + inl(l.replace(/^#+\s*/, "").replace(/^\*\*|\*\*$/g, "")) + "</h3>"; i++; continue; }
+    if (/^[-*]\s/.test(l)){ h += "<ul>"; while (i < L.length && /^[-*]\s/.test(L[i].trim())) h += "<li>" + inl(L[i++].trim().slice(2)) + "</li>"; h += "</ul>"; continue; }
+    if (/^\d+\.\s/.test(l)){ h += "<ol>"; while (i < L.length && /^\d+\.\s/.test(L[i].trim())) h += "<li>" + inl(L[i++].trim().replace(/^\d+\.\s/, "")) + "</li>"; h += "</ol>"; continue; }
+    if (l) h += "<p>" + inl(l) + "</p>"; i++;
+  }
+  return h;
+}
+
+load(); render();
+if (db.rows.length) $("status").textContent = "지난번에 불러온 학생 " + students().length + "명의 기록과 점수를 이어서 보여 줍니다.";
+</script>
+</body>
+</html>
