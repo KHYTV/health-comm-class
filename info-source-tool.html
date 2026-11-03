@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>정보 접촉 기록</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--green:#1f5145;--green2:#2e6b5c;--head:#1f5145;--gold:#b5781f;--gold2:#e9b45a;--mint:#e6efec;--beige:#f3e6cf;--ink:#1d2b27;--muted:#5d6f69;--line:#d5e0dc;--bg:#fbfaf6;--card:#ffffff;--field:#ffffff;--zebra:#f5f8f7;--on:#ffffff;--err:#b23b2e}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--green:#2f7a66;--green2:#7cc4ad;--head:#9fd8c5;--gold:#e0a54e;--gold2:#f0c274;--mint:#1f2e2a;--beige:#3a3123;--ink:#e3ece8;--muted:#9fb3ac;--line:#2f403b;--bg:#111816;--card:#18221f;--field:#1d2925;--zebra:#1b2623;--on:#ffffff;--err:#ff8a7a;color-scheme:dark}}
+:root[data-theme="dark"]{--green:#2f7a66;--green2:#7cc4ad;--head:#9fd8c5;--gold:#e0a54e;--gold2:#f0c274;--mint:#1f2e2a;--beige:#3a3123;--ink:#e3ece8;--muted:#9fb3ac;--line:#2f403b;--bg:#111816;--card:#18221f;--field:#1d2925;--zebra:#1b2623;--on:#ffffff;--err:#ff8a7a;color-scheme:dark}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans KR",system-ui,sans-serif;font-size:16px;line-height:1.55}
+.wrap{max-width:880px;margin:0 auto;padding:28px 16px 64px}
+.eyebrow{color:var(--gold);font-weight:700;font-size:13px}
+h1{color:var(--head);font-size:28px;margin:4px 0 20px}
+.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:22px}
+.step{min-width:0;padding:8px 10px;border-radius:8px;background:var(--mint);color:var(--muted);font-size:13px;font-weight:500}
+.step b{display:block;font-size:18px;color:var(--gold)}
+.step.on{background:var(--green);color:var(--on)}.step.on b{color:var(--gold2)}
+.step.done{background:var(--beige);color:var(--ink)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px;margin-bottom:16px}
+.card h2{margin:0 0 4px;font-size:20px;color:var(--head)}
+.hint{color:var(--muted);font-size:14px;margin:0 0 16px}
+label{display:block;font-weight:500;font-size:14px;margin:14px 0 6px}
+label small{color:var(--muted);font-weight:400}
+input[type=text],input[type=url],input[type=date],textarea,select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;background:var(--field);color:var(--ink)}
+textarea{min-height:120px;resize:vertical}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--green2);border-color:transparent}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:640px){.row{grid-template-columns:1fr}.step{font-size:11px;padding:6px}.step b{font-size:15px}}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{background:var(--mint);border-radius:999px;padding:5px 8px 5px 12px;font-size:14px;display:flex;align-items:center;gap:6px}
+.chip button{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:16px;line-height:1;padding:0 4px}
+.inline{display:flex;gap:8px}.inline input{flex:1}
+.btn{border:0;border-radius:8px;padding:11px 18px;font:inherit;font-weight:700;cursor:pointer;background:var(--green);color:var(--on)}
+.btn.ghost{background:transparent;color:var(--head);border:1px solid var(--head)}
+.btn.gold{background:var(--gold)}
+.actions{display:flex;gap:8px;justify-content:space-between;margin-top:20px;flex-wrap:wrap}
+.err{color:var(--err);font-size:14px;margin-top:8px;min-height:1em}
+pre.prompt{background:var(--mint);border-radius:8px;padding:14px;white-space:pre-wrap;font-size:13px;max-height:220px;overflow:auto;margin:0}
+.who{display:inline-block;background:var(--beige);border-radius:6px;padding:2px 10px;font-weight:700;font-size:14px;margin-bottom:6px}
+.result{border-top:1px solid var(--line);margin-top:14px;padding-top:6px}
+.result table{width:100%;border-collapse:collapse;margin:8px 0 16px;font-size:14px}
+.result th{background:var(--green);color:var(--on);text-align:left;padding:8px;font-weight:500}
+.result td{border-bottom:1px solid var(--line);padding:8px;vertical-align:top}
+.result tr:nth-child(even) td{background:var(--zebra)}
+.result h3{font-size:16px;color:var(--head);margin:18px 0 6px}
+.result ul,.result ol{margin:4px 0 12px;padding-left:22px}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg label{margin:0;flex:1;min-width:80px;border:1px solid var(--line);border-radius:8px;padding:10px;text-align:center;cursor:pointer;font-size:15px}
+.seg input{position:absolute;opacity:0;width:1px;height:1px}
+.seg label:has(input:checked){background:var(--green);color:var(--on);border-color:var(--head)}
+.seg.big label{font-size:22px;font-weight:700}
+.seg.col{flex-direction:column}.seg.col label{text-align:left}
+.log table{width:100%;border-collapse:collapse;font-size:14px}
+.log th{background:var(--green);color:var(--on);text-align:left;padding:8px;font-weight:500}
+.log td{border-bottom:1px solid var(--line);padding:8px;vertical-align:top}
+.log small{color:var(--muted)}
+.log td:nth-child(3){white-space:nowrap}.log td:first-child,.log td:nth-child(2){min-width:84px}.log th:nth-child(4){white-space:nowrap}
+.mark{font-weight:700;font-size:20px;color:var(--gold);text-align:center}
+.tally{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 14px}
+.tally div{background:var(--mint);border-radius:8px;padding:8px 12px;font-size:14px}
+.tally b{color:var(--head);font-size:18px;margin-left:6px}
+.srcbox{background:var(--mint);border-radius:10px;padding:12px 14px;margin:14px 0 4px}
+.srcbox h4{margin:0 0 8px;font-size:14px;color:var(--head)}
+.srcbox .pick{display:block;width:100%;text-align:left;background:var(--field);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:6px;font:inherit;font-size:14px;cursor:pointer;color:var(--ink)}
+.srcbox .pick:hover,.srcbox .pick.on{border-color:var(--head);box-shadow:0 0 0 1px var(--green)}
+.srcbox .pick small{display:block;color:var(--muted);font-size:12px}
+.srcbox .open{font-size:13px;color:var(--green2)}
+.issuetag{display:inline-block;background:var(--green);color:var(--on);border-radius:6px;padding:2px 10px;font-size:13px;font-weight:700;margin-left:6px}
+.ask{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--card);border-top:2px solid var(--green);box-shadow:0 -6px 24px rgba(0,0,0,.18);padding:14px max(16px,env(safe-area-inset-left,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-right,0px));display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap}
+.ask p{margin:0;font-weight:500;color:var(--ink)}
+.copybox{width:100%;min-height:90px;margin-top:10px;font-size:12px}
+.btn:focus-visible,.pick:focus-visible,.slot:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){.flip{transition:none}}
+.hidden{display:none}
+.demo{font-size:13px;color:var(--muted);text-align:right;margin-top:6px}
+.demo button{border:0;background:none;color:var(--gold);text-decoration:underline;cursor:pointer;font:inherit;padding:0 2px}
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.log table{min-width:620px}
+.result table{min-width:520px}
+.aipick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:4px 0 6px}
+@media (max-width:520px){.aipick{grid-template-columns:1fr}}
+.aipick a{display:flex;flex-direction:column;gap:2px;text-decoration:none;text-align:left;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--field);color:var(--ink)}
+.aipick a b{font-size:16px;color:var(--head)}
+.aipick a small{font-size:12px;color:var(--muted)}
+.aipick a:hover,.aipick a.on{border-color:var(--green);box-shadow:0 0 0 1px var(--green)}
+.aipick a:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.aistatus{background:var(--beige);border-radius:8px;padding:10px 12px;font-size:14px;margin:6px 0 4px}
+details.promptbox{margin-top:10px}
+details.promptbox summary{cursor:pointer;font-size:14px;color:var(--muted)}
+@media print{.steps,.actions,.demo,#s1,#s2,#s3,#s4{display:none!important}.card{border:0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">커뮤니케이션이 할 수 있는 것과 없는 것</div>
+  <h1>조별활동 · 정보 접촉 기록</h1>
+
+  <div class="steps">
+    <div class="step" data-s="1"><b>1</b>조 만들기</div>
+    <div class="step" data-s="2"><b>2</b>정보 입력</div>
+    <div class="step" data-s="3"><b>3</b>AI 분석</div>
+    <div class="step" data-s="4"><b>4</b>우리 판단</div>
+    <div class="step" data-s="5"><b>5</b>조별 기록표</div>
+  </div>
+
+  <section class="card" id="s1">
+    <h2>조 만들기</h2>
+    <p class="hint">조 이름과 참가자 전원의 이름을 적어 주세요. 이후 기록은 모두 이 조 이름으로 묶입니다.</p>
+    <label for="team">조 이름</label>
+    <input type="text" id="team" placeholder="예: 3조">
+    <label for="issue">우리 조 이슈 <small>사례 뱅크에서 뽑은 이슈</small></label>
+    <select id="issue"></select>
+    <label for="pname">참가자 <small>이름을 쓰고 Enter, 쉼표로 여러 명 한꺼번에도 됩니다</small></label>
+    <div class="inline"><input type="text" id="pname" placeholder="예: 김민지"><button class="btn ghost" id="padd" type="button">추가</button></div>
+    <div class="chips" id="chips"></div>
+    <div class="err" id="e1"></div>
+    <div class="actions"><span></span><button class="btn" id="go1">시작하기</button></div>
+  </section>
+
+  <section class="card hidden" id="s2">
+    <h2>정보 입력</h2>
+    <p class="hint">조원 한 명이 접한 건강 정보 하나를 입력합니다. 매체·글쓴이·날짜는 직접 찾아서 적어 주세요. 누가 언제 쓴 글인지 확인하는 것도 활동의 일부입니다.</p>
+    <label for="who">이 정보를 가져온 사람</label>
+    <select id="who"></select>
+    <div class="srcbox" id="srcbox"></div>
+    <label for="link">링크 <small>선택</small></label>
+    <input type="url" id="link" placeholder="https://">
+    <div class="row">
+      <div><label for="media">매체·채널</label><input type="text" id="media" placeholder="예: 코메디닷컴, 유튜브 채널명"></div>
+      <div><label for="author">글쓴이 <small>없으면 비워 두기</small></label><input type="text" id="author" placeholder="기자 이름이나 계정명"></div>
+    </div>
+    <label for="date">날짜</label>
+    <input type="date" id="date">
+    <label for="body">본문 <small>기사 본문, 또는 영상·SNS의 제목과 설명란</small></label>
+    <textarea id="body" placeholder="본문을 복사해 붙여넣으세요"></textarea>
+    <div class="demo democtl">수업 시연용: <button type="button" id="sampleIn">예시 기사 채우기</button></div>
+    <div class="err" id="e2"></div>
+    <div class="actions"><button class="btn ghost" data-go="1">이전</button><button class="btn" id="go2">AI 프롬프트 만들기</button></div>
+  </section>
+
+  <section class="card hidden" id="s3">
+    <h2>AI 분석</h2>
+    <p class="hint">① 쓸 AI를 누르면 프롬프트가 복사되고 새 탭이 열립니다. ② 그 탭에서 로그인한 뒤 입력칸에 붙여넣고 보내세요. ③ AI의 답변 전체를 복사해 이 페이지로 돌아와 아래 칸에 붙여넣으면 표로 정리됩니다.</p>
+    <div class="aipick" id="aipick">
+      <a href="https://gpt.jbnu.ai/" target="_blank" rel="noopener" data-ai="전북대 AI"><b>전북대 AI</b><small>gpt.jbnu.ai · 전북대 통합 로그인</small></a>
+      <a href="https://gemini.google.com/app" target="_blank" rel="noopener" data-ai="Gemini"><b>Gemini</b><small>Google 계정 로그인</small></a>
+      <a href="https://chatgpt.com/" target="_blank" rel="noopener" data-ai="ChatGPT"><b>ChatGPT</b><small>OpenAI 계정 로그인</small></a>
+    </div>
+    <div class="aistatus hidden" id="aistatus" role="status"></div>
+    <details class="promptbox"><summary>프롬프트 직접 보기·복사 (다른 AI를 쓸 때)</summary>
+      <pre class="prompt" id="prompt"></pre>
+      <div class="actions" style="margin-top:10px"><span></span><button class="btn gold" id="copy">프롬프트 복사</button></div>
+    </details>
+    <label for="ai">AI 결과 붙여넣기</label>
+    <textarea id="ai" style="min-height:110px" placeholder="AI의 답변 전체를 붙여넣으세요"></textarea>
+    <div class="demo democtl">수업 시연용: <button type="button" id="sample">예시 결과 불러오기</button></div>
+    <div class="result hidden" id="rendered"></div>
+    <div class="err" id="e3"></div>
+    <div class="actions"><button class="btn ghost" data-go="2">이전</button><button class="btn" id="go3">다음: 우리 판단</button></div>
+  </section>
+
+  <section class="card hidden" id="s4">
+    <h2>우리 판단</h2>
+    <p class="hint">이 칸은 AI가 아니라 조원이 직접 씁니다. AI가 정리한 근거와 빠진 것을 보고 판단해 주세요.</p>
+    <div class="who" id="who4"></div>
+    <label>신뢰 여부</label>
+    <div class="seg big">
+      <label><input type="radio" name="trust" value="O">O</label>
+      <label><input type="radio" name="trust" value="△">△</label>
+      <label><input type="radio" name="trust" value="X">X</label>
+    </div>
+    <label for="why">이유 한 줄</label>
+    <input type="text" id="why" placeholder="근거 목록과 빠진 것을 보고 판단한 이유">
+    <label>이 정보를 어디서 처음 접했나</label>
+    <div class="seg">
+      <label><input type="radio" name="route" value="알고리즘 추천">알고리즘 추천</label>
+      <label><input type="radio" name="route" value="검색">검색</label>
+      <label><input type="radio" name="route" value="지인 공유">지인 공유</label>
+      <label><input type="radio" name="route" value="광고">광고</label>
+      <label><input type="radio" name="route" value="수업">수업</label>
+    </div>
+    <label>이 정보의 문제는 어느 쪽인가</label>
+    <div class="seg col">
+      <label><input type="radio" name="kind" value="①">① 정보 자체가 틀리거나 과장됨</label>
+      <label><input type="radio" name="kind" value="②">② 정보는 맞는데 행동이 안 바뀜</label>
+      <label><input type="radio" name="kind" value="③">③ 정보와 상관없는 구조 문제 (가격·접근성·규제)</label>
+    </div>
+    <div class="err" id="e4"></div>
+    <div class="actions"><button class="btn ghost" data-go="3">이전</button><button class="btn" id="go4">기록표에 추가</button></div>
+  </section>
+
+  <section class="card hidden log" id="s5">
+    <h2 id="logtitle">조별 기록표</h2>
+    <p class="hint" id="logmembers"></p>
+    <div class="tally" id="tally"></div>
+    <div class="tablewrap"><table><thead><tr><th>가져온 사람</th><th>정보</th><th>근거 유형</th><th>신뢰</th><th>이유</th><th>문제</th></tr></thead><tbody id="logbody"></tbody></table></div>
+    <p class="hint" style="margin-top:14px" id="bridge"></p>
+    <div class="actions">
+      <button class="btn ghost" id="more">정보 하나 더 입력</button>
+      <span style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost localonly" id="print">인쇄·PDF</button><button class="btn ghost localonly" id="csv">CSV 내려받기</button><button class="btn" id="copytsv">기록표 복사</button></span>
+    </div>
+    <textarea id="tsv" class="copybox hidden" readonly aria-label="복사할 기록표"></textarea>
+    <p class="hint" id="copied" style="margin:6px 0 0"></p>
+    <div class="demo"><button type="button" id="reset">새 조로 처음부터</button></div>
+  </section>
+</div>
+
+<script>
+function askConfirm(msg, yesLabel, noLabel, onYes, onNo){
+  document.querySelectorAll(".ask").forEach(x => x.remove());
+  const bar = document.createElement("div"); bar.className = "ask"; bar.setAttribute("role", "alertdialog");
+  const p = document.createElement("p"); p.textContent = msg;
+  const y = document.createElement("button"); y.className = "btn"; y.textContent = yesLabel;
+  const n = document.createElement("button"); n.className = "btn ghost"; n.textContent = noLabel;
+  y.onclick = () => { bar.remove(); onYes && onYes(); };
+  n.onclick = () => { bar.remove(); onNo && onNo(); };
+  bar.append(p, y, n); document.body.appendChild(bar); y.focus();
+}
+const IN_FRAME = (() => { try { return window.self !== window.top; } catch(e){ return true; } })();
+const PROMPT_HEAD = "너는 건강 커뮤니케이션 수업의 조별활동 보조자다. 내가 주는 건강 관련 정보(기사, 영상, SNS 게시물, 블로그, 광고)에서 \"무엇이 근거로 제시되었는지\"만 정리해라. 그 정보를 믿을 만한지 판단하는 것은 내 몫이므로 너는 판정하지 마라.\n\n규칙\n1. 신뢰도 점수, 등급, \"믿을 만하다/아니다\" 같은 판정은 쓰지 마라.\n2. 본문에 없는 내용을 추측해서 채우지 마라. 없으면 \"본문에 없음\"이라고 써라.\n3. 링크를 열 수 없으면 내용을 짐작하지 말고 \"링크를 열 수 없으니 본문을 붙여넣어 달라\"고만 답해라.\n4. 영상이나 SNS 게시물이라서 제목·설명란·캡션만 주어진 경우에만, 결과 맨 위에 \"제목과 설명란만 분석함\"이라고 밝혀라. 기사 본문이 있으면 이 문구를 쓰지 마라.\n6. 매체·글쓴이·날짜는 내가 적어 준 것을 그대로 옮겨라. 내가 비워 두었으면 \"미기입\"이라고 써라.\n7. 결과 맨 위에 \"조 이름 / 가져온 사람\" 한 줄을 먼저 써라. 조원 여러 명이 같은 대화창에서 이어서 쓰므로 누구 기록인지 구분하기 위함이다.\n5. 전체 분량은 A4 반 장을 넘기지 마라.\n\n출력 1. 정보 요약표 (표로 작성)\n| 항목 | 내용 |\n|---|---|\n| 형식 | 기사 / 영상 / SNS / 블로그 / 광고 / 기관 자료 중 하나 |\n| 매체·채널 | 내가 적은 이름. 본문에 광고주나 후원 표시가 있으면 함께 |\n| 글쓴이 | 내가 적은 이름과 소속 |\n| 날짜 | 내가 적은 게시일 |\n| 핵심 주장 | 이 정보가 독자에게 믿게 하려는 것, 1~2문장 |\n| 독자에게 권하는 행동 | 사라, 끊어라, 먹지 마라, 운동해라 등. 없으면 \"없음\" |\n\n출력 1-2. 근거 목록 (제시된 근거를 하나씩, 표로 작성)\n| 번호 | 근거 내용 | 근거 유형 | 원출처가 적혀 있나 |\n|---|---|---|---|\n근거 유형은 다음 중에서 고른다: 통계·수치 / 연구·논문 / 실명 전문가 인용 / 익명 전문가 인용 / 기관 발표 / 다른 매체·기사 인용 / 개인 사례·체험담 / 비교 실험 / 근거 없이 주장만.\n연구나 수치를 다른 매체를 거쳐 인용했으면 \"다른 매체·기사 인용\"으로 분류하고, 근거 내용에 원래 연구 이름을 함께 써라.\n원출처는 \"링크 있음 / 이름만 있음 / 없음\" 중 하나로 쓴다.\n근거가 하나도 없으면 \"제시된 근거 없음\" 한 줄만 써라.\n\n출력 1-3. 빠져 있는 것 (3개 이내, 한 줄씩)\n독자가 판단하려면 필요한데 본문에 없는 정보. 예: 표본 크기, 비교 대상, 누가 연구비를 댔는지, 수치의 기간, 반대 의견.\n\n출력 1-4. 확인 질문 (정확히 3개)\n이 정보를 믿을지 결정하기 위해 내가 직접 찾아봐야 할 질문. 답은 쓰지 마라.\n";
+const SAMPLE = "**{TEAM} / {WHO}**\n\n**출력 1. 정보 요약표**\n\n| 항목 | 내용 |\n|---|---|\n| 형식 | 기사 |\n| 매체·채널 | 인사이트 (광고·후원 표시 없음) |\n| 글쓴이 | 황수진 |\n| 날짜 | 2025-04-15 |\n| 핵심 주장 | 위고비로 10kg을 감량한 유튜버 빠니보틀이 위고비 부작용을 호소하며 경고했다. 본인은 위고비를 홍보한 적이 없다고 밝혔다. |\n| 독자에게 권하는 행동 | 위고비 처방은 병원에서 의사와 자세히 상담한 뒤 진행할 것 (빠니보틀의 말을 인용한 형태) |\n\n**출력 1-2. 근거 목록**\n\n| 번호 | 근거 내용 | 근거 유형 | 원출처가 적혀 있나 |\n|---|---|---|---|\n| 1 | 빠니보틀이 인스타그램에 올린 글: 위고비와 관계없고 홍보한 적 없다, 속 울렁거림 증상이 계속되고 있다 | 개인 사례·체험담 | 이름만 있음 (계정명 표기, 링크 없음) |\n| 2 | 빠니보틀의 말: 주변 지인 중 위고비를 맞고 부작용(무기력증, 구토감, 우울증 등)을 호소하는 사례가 많다 | 개인 사례·체험담 | 이름만 있음 (지인은 익명, 인원수 없음) |\n| 3 | 1월 인스타그램 스토리: 위고비 처방을 시작했고 \"많이 먹었던 것\"이라고 밝힘 | 개인 사례·체험담 | 없음 |\n| 4 | 위고비 투여 후 10kg 감량 | 통계·수치 | 없음 (측정 방법과 기간 표시 없음) |\n| 5 | 위고비는 지난해 10월 국내 출시, BMI 30 이상 비만 환자 또는 동반질환이 있는 과체중 환자가 투여 대상 | 기관 발표 | 없음 (어느 기관인지 표시 없음) |\n| 6 | 복통, 메스꺼움, 소화불량, 무기력감 등 부작용이 보고되고, 장기 복용 위험성 우려가 제기되고 있다 | 근거 없이 주장만 | 없음 |\n\n**출력 1-3. 빠져 있는 것**\n- 부작용 보고의 출처(어느 기관이나 연구인지), 보고 건수와 빈도\n- 빠니보틀의 투여 용량과 기간, 감량 기간, 의사 관리 여부\n- 장기 복용 우려를 제기한 주체와 그 구체적 내용\n\n**출력 1-4. 확인 질문**\n1. 위고비 부작용의 종류와 발생 빈도는 식품의약품안전처 허가 자료나 임상시험 논문에서 어떻게 나와 있는가?\n2. 기사에 나온 투여 대상(BMI 30 이상 등) 기준은 공식 허가 사항과 일치하는가?\n3. 빠니보틀 한 사람의 체험과 지인의 사례를 위고비 전반의 효과·부작용으로 일반화해도 되는가?\n";
+const SAMPLE_INPUT = {"media": "인사이트", "author": "황수진", "date": "2025-04-15", "link": "https://www.insight.co.kr/news/499087", "body": "(시연용 요약) 여행 유튜버 빠니보틀이 위고비로 약 10kg을 감량했다고 알려진 뒤, 인스타그램에 위고비를 홍보한 적이 없다며 부작용을 경고하는 글을 올렸다. 주변 지인들이 무기력감, 구토감, 우울감을 호소한다고 전했고, 본인도 속 울렁거림이 계속된다며 의사와 상담하라고 당부했다. 기사는 위고비의 투여 대상 기준과 여러 부작용이 보고되고 있다는 내용으로 마무리된다."};
+const BANK = [{"no": 1, "name": "제로 음료", "hook": "\"제로니까 괜찮다\"는 맞는 말일까?", "what": "국내 제로 탄산음료 시장은 2020년 924억 원에서 2022년 3,683억 원으로 2년 만에 약 4배가 됐고, 2024년 1~4월 GS25 탄산음료 매출의 절반 이상(52.3%)이 제로 제품이었다(뉴스토마토). 한국소비자원이 14개 제품을 시험한 결과 감미료는 하루 허용섭취량의 3~13%로 높지 않았지만, 소비자원은 다이어트 목적으로 제로 음료를 마시는 것은 바람직하지 않다고 밝혔다.", "issue": "2023년 IARC가 아스파탐을 발암 가능 물질(2B군)로 분류했지만 식약처는 현재 섭취 수준에서 안전하다며 기준을 유지했다. 이후 에리스리톨과 혈전 위험을 잇는 연구도 보도됐다. 쟁점은 '기준 안이라 안전하다'와 '건강에 좋다'가 다른 말이라는 점이다.", "affected": ["다이어트 중인 20~30대", "당뇨·심혈관 질환자", "카페인에 민감한 사람과 어린이", "물 대신 제로 탄산을 마시는 사람"], "gain": "제로 라인을 늘리는 음료·주류·빙과 기업, 유통업체, 감미료 제조업체", "lose": "'제로 = 건강'으로 믿고 많이 마시는 소비자, 물 마시기를 권하는 공중보건 메시지", "pro": "소비자원이 '다이어트용으로 권하지 않는다'고 공식 발표한 뒤에도 업계는 제로 라인을 계속 늘렸다. 정보 하나로 매대를 채운 마케팅을 이길 수 있을까?", "con": "제품 자체는 기준 안에서 안전하다(식약처). 문제가 제품이 아니라 '제로 = 건강'이라는 인식이라면, 인식을 바로잡는 정보 제공이 가장 알맞은 대응이다.", "sources": [{"title": "\"제로니까 괜찮아\" 물처럼 마셨는데… 3시간 뒤 '혈전 리스크' 2배 [건강+]", "outlet": "세계일보 김현주", "date": "2026-02-12", "url": "https://www.segye.com/newsView/20260212502498", "evidence": "해외 세포 실험과 약 4,000명 추적 연구 인용. 제목이 강하고, 기사 스스로 세포 실험의 한계를 밝힘", "media": "세계일보", "author": "김현주"}, {"title": "식약처 \"아스파탐 안전성 문제없어...현행 기준 유지\"", "outlet": "데일리팜 이혜경", "date": "2023-07-14", "url": "https://www.dailypharm.com/user/news/26245", "evidence": "식약처 공식 입장과 섭취량 통계. 60kg 성인은 제로콜라 약 55캔을 마셔야 허용량에 이름", "media": "데일리팜", "author": "이혜경"}, {"title": "'제로음료' 14개 제품 비교정보 제공", "outlet": "한국소비자원 (정책브리핑)", "date": "2024-08-01", "url": "https://www.korea.kr/briefing/policyBriefingView.do?newsId=156643946", "evidence": "공공기관 시험 데이터. 감미료·열량·카페인 수치와 WHO 권고 인용", "media": "한국소비자원 (정책브리핑)", "author": ""}, {"title": "(제로의 진실)① \"여기도 제로, 저기도 제로\"…무차별 마케팅 폭격", "outlet": "뉴스토마토 김충범", "date": "2024-07-22", "url": "https://newstomato.com/ReadNews.aspx?no=1235781", "evidence": "시장 규모와 편의점 판매 데이터, 유통업계 관계자의 마케팅 전략 발언", "media": "뉴스토마토", "author": "김충범"}]}, {"no": 2, "name": "fridge cigarette", "hook": "다이어트 콜라 한 캔이 '담배 타임'이 될 때", "what": "2025년 6월 미국 틱톡에서 차가운 다이어트 콜라를 따는 순간을 담배 피우는 휴식에 빗댄 '냉장고 담배(fridge cigarette)' 영상이 380만 회 넘게 조회되며 퍼졌다(TODAY). 청년 시장조사 기관 YPulse 조사에서는 18~24세의 50%가 기분이 가라앉을 때 탄산음료로 스스로를 달랜다고 답했다.", "issue": "담배를 대신하는 '건강한 휴식'인지, 스트레스를 탄산·카페인·감미료로 푸는 또 다른 의존 습관인지가 쟁점이다. 기업이 돈을 쓰지 않았는데 밈이 사실상 광고 역할을 한다는 점도 논란이다. 국내 보도는 거의 없어, 한국에서도 통할 이야기인지 따져 볼 만하다.", "affected": ["18~24세 Z세대", "사무직 청년", "흡연 대신 쉬는 방법을 찾는 사람", "단 음료로 기분을 달래는 사람"], "gain": "광고비 없이 바이럴 효과를 얻는 탄산음료 기업, 플랫폼과 인플루언서", "lose": "습관적으로 많이 마시게 되는 청년층, 물 마시기·스트레스 관리를 권하는 보건 메시지", "pro": "젊은 층은 탄산음료가 건강하지 않다는 것을 이미 안다. 아는 사람에게 정보를 더 주는 것으로는 부족하고, 휴식 공간과 업무 문화, 자판기 진열이 바뀌어야 한다.", "con": "이 습관은 밈, 곧 커뮤니케이션이 만든 것이다. 그렇다면 다른 밈으로 '건강한 휴식 의식'을 똑같이 유행시킬 수 있다.", "sources": [{"title": "\"다이어트 코크냐 코크 제로냐\"…미국 뒤흔드는 '제로콜라 내전'", "outlet": "이투데이 김해욱", "date": "2026-05-30", "url": "https://www.etoday.co.kr/news/view/2587505", "evidence": "국내 유일 언급(한 문장). 미국 제로 음료 판매 데이터와 마케팅 교수 분석, WSJ 재인용", "media": "이투데이", "author": "김해욱"}, {"title": "Have a 'Fridge Cigarette': Diet Coke Is the New Smoke Break", "outlet": "TODAY Joseph Lamour", "date": "2025-06-27", "url": "https://www.today.com/today/amp/rcna215271", "evidence": "유행의 시작과 조회수. 전문가 인용이나 기업 입장은 없음", "media": "TODAY", "author": "Joseph Lamour"}, {"title": "'Fridge cigarette' is Gen Z's new Diet Coke obsession that concerns health experts", "outlet": "Fox News Andrea Margolis", "date": "2025-07-07", "url": "https://www.foxnews.com/food-drink/fridge-cigarette-gen-zs-diet-coke-obsession-concerns-health-experts", "evidence": "심리치료사·자연요법 의사 인용. 한 전문가의 도파민 주장은 근거 연구 없음", "media": "Fox News", "author": "Andrea Margolis"}, {"title": "Gen Z's latest vice? The \"fridge cigarette.\"", "outlet": "YPulse", "date": "2025-07-10", "url": "https://www.ypulse.com/newsfeed/2025/07/10/gen-zs-latest-vice-the-fridge-cigarette/", "evidence": "18~24세 설문 통계. 표본 크기와 조사 방법은 밝히지 않음", "media": "YPulse", "author": ""}]}, {"no": 3, "name": "술방·먹방", "hook": "보는 것만으로 먹고 마시는 습관이 바뀔까?", "what": "2024년 국정감사 자료에 따르면 유튜브에서 '술방'으로 검색되는 조회수 상위 100개 영상 모두에 문제음주 장면이 있었고, 연령 제한이 걸린 영상은 하나도 없었다(세계일보). 청소년 51,850명을 분석한 연구에서는 먹방·쿡방을 자주 볼수록 패스트푸드, 단 음료, 야식 섭취와 더 많이 연관됐다(Hong, 2024).", "issue": "정부의 미디어 음주 가이드라인과 먹방 가이드라인 구상은 모두 강제력 없는 '권고'여서, '효과가 없다'는 비판과 '국가가 개인 방송에 개입한다'는 비판을 동시에 받는다. 먹방과 식습관 연구는 상관관계만 보여 주고 인과관계는 입증하지 못했다.", "affected": ["청소년과 어린이 시청자", "자주 시청하는 학생층", "크리에이터와 출연 연예인", "주류·외식·배달 업계"], "gain": "조회수와 광고 수익을 얻는 크리에이터·플랫폼, 노출 효과를 얻는 주류·식품 업계", "lose": "왜곡된 음주·식사 규범에 노출되는 청소년, 비만·음주 폐해 비용을 떠안는 건강보험", "pro": "가이드라인을 고친 뒤에도 유튜브 상위 100개 술방 영상 중 연령 제한은 0개였고, 방송에서 적발된 음주 장면 86건 중 88%가 방심위 심의에서 '문제없음'이었다. 권고는 작동하지 않았다.", "con": "규제 없이도 술방이 줄고 맨정신 토크쇼가 자리 잡았다는 보도가 있다(데일리안 2026). 시청자 반응과 여론이 시장을 바꾼 사례다.", "sources": [{"title": "잘 나가는 드라마·예능 프로 88%서 등장한 '이 장면' [2024 국정감사]", "outlet": "세계일보 정재영", "date": "2024-10-14", "url": "https://www.segye.com/newsView/20241014504804", "evidence": "한국건강증진개발원 모니터링 통계와 방심위 심의 결과, 국회의원 발언", "media": "세계일보", "author": "정재영"}, {"title": "[쿠키영상] \"국가 비만 관리해야\" 먹방 규제 시동거는 정부… \"먹방이 비만 유발? 근거는?\"", "outlet": "쿠키뉴스 김성일", "date": "2018-07-26", "url": "https://www.kukinews.com/article/view/kuk201807260311", "evidence": "먹방 가이드라인 논쟁의 출발점. 정부 발표와 시민 반발을 함께 실음", "media": "쿠키뉴스", "author": "김성일"}, {"title": "Effects of watching Mukbang and Cookbang videos on adolescents' dietary habits and mental health", "outlet": "대한지역사회영양학회지 홍승희", "date": "2024-04-30", "url": "https://koreascience.or.kr/article/JAKO202414857710828.page", "evidence": "청소년건강행태조사 51,850명 분석 논문. 횡단 연구라 인과관계는 아님", "media": "대한지역사회영양학회지", "author": "홍승희"}, {"title": "\"취해야 솔직하다고?\"…술방 밀어낸 맨정신 토크 [취하지 않는 사회②]", "outlet": "데일리안 박정선", "date": "2026-07-08", "url": "https://www.dailian.co.kr/news/view/1664317/", "evidence": "업계 쪽 시각. 익명 제작사 관계자 발언 위주이고 수치는 없음", "media": "데일리안", "author": "박정선"}]}, {"no": 4, "name": "수입 식품 불안", "hook": "검사 결과는 '불검출'인데 왜 못 믿을까?", "what": "일본은 2023년 8월부터 2년간 14차례에 걸쳐 원전 오염수 약 11만 톤을 방류했고, 해수부는 2025년 수산물 약 1만1천 건을 검사해 부적합이 없었다고 밝혔다(뉴시스). 그런데 식약처 인식조사에서 정부 방사능 관리를 신뢰한다는 응답은 2021년 53.5%에서 2023년 16.3%로 떨어졌다(세계일보).", "issue": "검사 결과는 계속 '불검출'인데 신뢰는 오히려 떨어졌다. 이것을 과학의 문제로 볼지, 투명성과 신뢰의 문제로 볼지가 쟁점이다. 한편 2021년 '알몸 배추' 영상 뒤 줄었던 중국산 김치 수입은 2025년 가격 때문에 역대 최대가 됐다. 불안과 실제 행동이 어긋난다.", "affected": ["학부모와 어린이(급식)", "국내 어민과 수산업계", "김치 제조업체와 외식 자영업자", "검사를 맡은 식약처·해수부"], "gain": "불안할 때는 '국산 100%'를 내세우는 업체, 가격이 오르면 값싼 수입산을 쓰는 식당과 수입업체", "lose": "소비 위축을 겪는 국내 어민, 값싼 수입산과 경쟁하는 국산 김치 업계, 신뢰를 잃은 정부", "pro": "정부가 '불검출'을 반복 발표하는 동안 신뢰도는 16.3%까지 떨어졌다. 정보가 부족한 게 아니라 제도와 신뢰가 문제이므로 원산지 표시 같은 제도를 고쳐야 한다.", "con": "'알몸 김치' 공포도 4년 만에 사라졌다. 실제 위험이 낮다면 정확한 정보 공개와 시간이 불안을 해소한다.", "sources": [{"title": "2년간 11만t 방류…국내 방사능 검사 결과 '불검출' [日 원전 오염수 방류 2년]②", "outlet": "뉴시스 홍세희", "date": "2025-09-07", "url": "https://www.newsis.com/view/NISX20250902_0003313017", "evidence": "방류량과 해수부 검사 건수·결과 등 공식 데이터, 환경단체 반론", "media": "뉴시스", "author": "홍세희"}, {"title": "올해 후쿠시마産 명란젓 16t 수입…'일본산'으로만 표시", "outlet": "세계일보 정재영", "date": "2024-10-04", "url": "https://www.segye.com/newsView/20241004506536", "evidence": "식약처 인식조사 수치와 원산지 표시 문제 제기. 조사 표본 수는 기사에 없음", "media": "세계일보", "author": "정재영"}, {"title": "\"안 먹어요\"…중국산 김치 포비아로 수입량 줄었다", "outlet": "뉴스토마토 유승호", "date": "2021-05-24", "url": "https://newstomato.com/ReadNews.aspx?no=1046361", "evidence": "'알몸 배추' 직후 수입 통계와 당국 검사 결과, 업계의 '국산' 마케팅", "media": "뉴스토마토", "author": "유승호"}, {"title": "\"'알몸김치'보다 '金배추'가 더 무섭다\"…중국산 찾는 식당들", "outlet": "세계일보 국윤진", "date": "2025-07-24", "url": "https://www.segye.com/newsView/20250723515445", "evidence": "김치 수입액 역대 최대와 국산·중국산 가격 차이 등 무역 통계", "media": "세계일보", "author": "국윤진"}]}, {"no": 5, "name": "비만치료제", "hook": "'기적의 다이어트약', 누구를 위한 약인가?", "what": "2025년 상반기 비만약 처방은 114만여 건이었고, 위고비 처방은 2024년 한 해 약 5만 건에서 2025년 상반기에만 약 34만 건으로 늘었다(머니투데이). 2025년 1~9월 온라인 불법 판매·광고 적발은 8월에 나온 마운자로가 218건으로 위고비(141건)를 넘었다(데일리팜, 식약처 국감 자료).", "issue": "처방 기준은 BMI 30 이상, 또는 27 이상이면서 동반질환이 있는 경우인데, 정상 체중인 사람도 미용 목적으로 처방을 요구하고 온라인·해외에서 약을 구한다. 반대로 건강보험이 적용되지 않아 정말 치료가 필요한 환자는 약값 때문에 쓰지 못한다.", "affected": ["미용 목적으로 약을 쓰는 20~30대", "청소년", "약값을 감당하기 어려운 고도비만 환자", "처방 요구를 받는 동네 의원"], "gain": "제약사(국내 비만약 시장이 1년 새 약 3배), 기준을 느슨하게 처방하는 일부 의원, 불법 판매자", "lose": "부작용을 겪는 오남용 사용자, 약값 부담이 큰 실제 환자, 단속을 맡는 식약처", "pro": "식약처가 과대광고 자제 공문을 보내고 홍보를 검토했지만, 1년 뒤 마운자로 불법 광고는 위고비를 넘어섰다. 결국 정부도 비대면 처방 제한 같은 규제로 방향을 틀었다.", "con": "오남용의 출발점은 마른 몸에 대한 선망과 '기적의 약'이라는 이야기다. 수요를 만드는 것이 인식이라면, 인플루언서 채널에 맞춘 정확한 메시지가 가장 직접적인 대응이다.", "sources": [{"title": "[단독] 너도나도 '기적의 비만약'…상반기 비만약 처방 114만여건", "outlet": "머니투데이 박미주", "date": "2025-08-25", "url": "https://www.mt.co.kr/thebio/2025/08/25/2025082515322849166", "evidence": "국회의원실 처방 통계와 매출 데이터, 의원장 발언과 일화", "media": "머니투데이", "author": "박미주"}, {"title": "국감장 달군 '위고비' 열풍…학회·식약처도 오남용 우려", "outlet": "메디칼타임즈 임수민", "date": "2024-10-23", "url": "https://medicaltimes.com/Mobile/News/NewsView.html?ID=1161050", "evidence": "대한비만학회 성명과 식약처장 국감 답변", "media": "메디칼타임즈", "author": "임수민"}, {"title": "8월 출시 마운자로, 온라인 불법광고 위고비보다 많아", "outlet": "데일리팜 이탁순", "date": "2025-10-20", "url": "https://dailypharm.com/user/news/1181", "evidence": "식약처 국감 업무보고의 적발 건수와 정부 대응 목록", "media": "데일리팜", "author": "이탁순"}, {"title": "마운자로 사러 일본 찾는 한국인 급증…몇몇 병원 SNS 성지", "outlet": "주간경향 이용욱", "date": "2026-09-13", "url": "https://weekly.khan.co.kr/article/202609131429001", "evidence": "한일 가격 차이와 개인 일화, SNS 게시글. 일본 언론 재인용", "media": "주간경향", "author": "이용욱"}]}, {"no": 6, "name": "러닝·근력운동", "hook": "운동 열풍인데 왜 운동 안 하는 사람은 그대로일까?", "what": "문체부 조사에서 주 1회 이상 생활체육 참여율은 62.9%로 올랐지만, 10대는 43.2%에 그쳤다(머니투데이). 인스타그램 '러닝' 해시태그 게시물은 2023년 말 약 200만 건에서 2025년 9월 400만 건을 넘었다(매경이코노미).", "issue": "러닝크루의 소음과 길 막기 민원이 늘자 서초구는 반포종합운동장에서 5인 이상 단체 달리기를 제한했지만, 과잉 규제라는 반론도 있다(뉴시스). 운동하지 않는 이유로는 시간 부족(61.3%)과 시설 접근성 부족(31.3%)이 꼽혔다.", "affected": ["SNS를 활발히 쓰는 20~30대 러너", "공원을 함께 쓰는 주민과 산책객", "운동 참여율이 가장 낮은 10대", "시간·비용·시설 때문에 운동 못 하는 사람"], "gain": "스포츠·패션 브랜드와 플랫폼, 마라톤 대회 주최 측", "lose": "공간 갈등을 겪는 주민, 민원을 떠안은 지자체, 부상을 입은 초보 러너, 운동할 여건이 안 되는 사람", "pro": "갈등의 뿌리는 공간 부족이다. 러너는 단체로 뛸 곳이 없다고 반발하고, 조례로도 제재하기 어렵다. 매너 캠페인으로는 같은 공간을 두고 벌어지는 충돌을 풀 수 없다.", "con": "러닝크루는 SNS로 모이는 공동체다. 인원을 제한하기보다 크루와 브랜드가 에티켓을 직접 만들어 퍼뜨리는 편이 더 빠르고 반발도 적다.", "sources": [{"title": "'5명 제한' 규칙까지 생긴 러닝크루 논란…제재가 능사?", "outlet": "뉴시스 박대로", "date": "2024-10-08", "url": "https://www.newsis.com/view/NISX20241008_0002912290", "evidence": "지자체별 대응 사례와 민원, 연구자 분석", "media": "뉴시스", "author": "박대로"}, {"title": "\"생활체육 걷기-보디빌딩-등산 순\" 문체부, 국민 9000명 조사 결과 발표", "outlet": "머니투데이 신화섭", "date": "2026-01-19", "url": "https://www.mt.co.kr/sports/2026/01/19/2026011912100485038", "evidence": "문체부 공식 조사 통계. 연령별 참여율과 운동하지 않는 이유", "media": "머니투데이", "author": "신화섭"}, {"title": "러닝 인구 천만 시대 '런심'의 경제학 [스페셜리포트]", "outlet": "매경이코노미 나건웅·최창원", "date": "2025-09-18", "url": "https://v.daum.net/v/20250918070600267", "evidence": "해시태그 수와 카드 소비 데이터. '러닝 인구 천만'은 출처 없는 표현", "media": "매경이코노미", "author": "나건웅·최창원"}, {"title": "등산·러닝 무리했더니 발바닥 찌릿… 가을철 '족저근막염 주의보' [건강+]", "outlet": "세계일보 이복진", "date": "2026-10-19", "url": "https://www.segye.com/newsView/20261018512501", "evidence": "심평원 환자 통계와 정형외과 교수 발언. 젊은 러너 부상 증가를 직접 보여 주진 않음", "media": "세계일보", "author": "이복진"}]}];
+const PARAMS = new URLSearchParams(location.search);
+const issueOf = no => BANK.find(c => String(c.no) === String(no));
+const issueLabel = no => { const c = issueOf(no); return c ? String(c.no).padStart(2, "0") + " " + c.name : ""; };
+const $ = id => document.getElementById(id);
+let st = {team:"", issue:"", people:[], entries:[], cur:null, step:1};
+function save(){ try{ localStorage.setItem("infolog", JSON.stringify(st)); }catch(e){} }
+function load(){ try{ const v = JSON.parse(localStorage.getItem("infolog")); if (v) st = v; }catch(e){} }
+function esc(s){ return String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+function show(n){
+  st.step = n; save();
+  for (let i = 1; i <= 5; i++) $("s"+i).classList.toggle("hidden", i !== n);
+  document.querySelectorAll(".step").forEach(el => { const s = +el.dataset.s; el.className = "step" + (s === n ? " on" : s < n ? " done" : ""); });
+  if (n === 2){ fillWho(); renderSources(); }
+  if (n === 3) $("prompt").textContent = buildPrompt();
+  if (n === 4) $("who4").textContent = st.cur.who + " · " + st.cur.media;
+  if (n === 5) renderLog();
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => show(+b.dataset.go));
+
+// 1. 조 만들기
+function renderChips(){
+  $("chips").innerHTML = "";
+  st.people.forEach((p, i) => {
+    const c = document.createElement("span"); c.className = "chip"; c.textContent = p;
+    const x = document.createElement("button"); x.textContent = "×"; x.title = "삭제";
+    x.onclick = () => { st.people.splice(i, 1); renderChips(); save(); };
+    c.appendChild(x); $("chips").appendChild(c);
+  });
+}
+function addPerson(){
+  const v = $("pname").value.trim(); if (!v) return;
+  v.split(/[,，]/).map(s => s.trim()).filter(Boolean).forEach(n => { if (!st.people.includes(n)) st.people.push(n); });
+  $("pname").value = ""; renderChips(); save();
+}
+$("padd").onclick = addPerson;
+$("pname").addEventListener("keydown", e => { if (e.key === "Enter" && !e.isComposing){ e.preventDefault(); addPerson(); } });
+$("go1").onclick = () => {
+  st.team = $("team").value.trim();
+  if ($("pname").value.trim()) addPerson();
+  st.issue = $("issue").value;
+  if (!st.team){ $("e1").textContent = "조 이름을 적어 주세요."; return; }
+  if (!st.issue){ $("e1").textContent = "사례 뱅크에서 뽑은 이슈를 골라 주세요."; return; }
+  if (!st.people.length){ $("e1").textContent = "참가자를 한 명 이상 추가해 주세요."; return; }
+  $("e1").textContent = ""; save(); show(2);
+};
+
+// 2. 정보 입력
+function fillWho(){
+  const s = $("who"), prev = s.value; s.innerHTML = "";
+  st.people.forEach(p => { const o = document.createElement("option"); o.textContent = p; s.appendChild(o); });
+  const brought = new Set(st.entries.map(e => e.who));
+  const next = st.people.find(p => !brought.has(p));
+  s.value = st.people.includes(prev) && !brought.has(prev) ? prev : (next || st.people[0]);
+}
+function renderSources(){
+  const c = issueOf(st.issue), box = $("srcbox");
+  if (!c){ box.classList.add("hidden"); return; }
+  box.classList.remove("hidden");
+  box.innerHTML = "<h4>" + esc(issueLabel(st.issue)) + " · 사례 뱅크 참고 자료에서 고르기 <small style='font-weight:400;color:var(--muted)'>직접 찾은 자료는 아래에 바로 입력</small></h4>" +
+    c.sources.map((s, i) => "<button type='button' class='pick' data-i='" + i + "'>" + esc(s.title) + "<small>" + esc(s.media) + (s.author ? " · " + esc(s.author) : "") + " · " + esc(s.date) + "</small></button>").join("") +
+    "<div class='open hidden' id='openlink'></div>";
+  box.querySelectorAll(".pick").forEach(b => b.onclick = () => {
+    const s = c.sources[+b.dataset.i];
+    $("link").value = s.url; $("media").value = s.media; $("author").value = s.author; $("date").value = s.date;
+    box.querySelectorAll(".pick").forEach(x => x.classList.toggle("on", x === b));
+    const o = $("openlink"); o.classList.remove("hidden");
+    o.innerHTML = "매체·글쓴이·날짜가 채워졌습니다. 본문은 <a href='" + esc(s.url) + "' target='_blank' rel='noopener'>기사를 열어</a> 직접 복사해 붙여넣으세요.";
+    $("body").focus();
+  });
+}
+$("sampleIn").onclick = () => { ["link","media","author","date","body"].forEach(k => $(k).value = SAMPLE_INPUT[k]); };
+$("go2").onclick = () => {
+  const c = {who:$("who").value, link:$("link").value.trim(), media:$("media").value.trim(), author:$("author").value.trim(), date:$("date").value, body:$("body").value.trim()};
+  if (!c.media){ $("e2").textContent = "매체·채널을 적어 주세요."; return; }
+  if (!c.body){ $("e2").textContent = "본문을 붙여넣어 주세요."; return; }
+  $("e2").textContent = ""; st.cur = c; $("ai").value = ""; $("rendered").classList.add("hidden");
+  $("aistatus").classList.add("hidden"); document.querySelectorAll("#aipick a").forEach(x => x.classList.remove("on"));
+  save(); show(3);
+};
+function buildPrompt(){
+  const c = st.cur;
+  return PROMPT_HEAD + "\n조 정보\n조 이름: " + st.team + "\n조 이슈: " + (issueOf(st.issue) || {}).name + "\n참가자: " + st.people.join(", ") + "\n이 정보를 가져온 사람: " + c.who +
+    "\n\n분석할 정보\n링크: " + c.link + "\n매체·채널: " + c.media + "\n글쓴이: " + c.author + "\n날짜: " + c.date + "\n본문:\n" + c.body;
+}
+document.querySelectorAll("#aipick a").forEach(a => a.addEventListener("click", () => {
+  const name = a.dataset.ai, text = $("prompt").textContent, box = $("aistatus");
+  st.cur.aiService = name; save();
+  document.querySelectorAll("#aipick a").forEach(x => x.classList.toggle("on", x === a));
+  box.classList.remove("hidden");
+  let p;
+  try { p = navigator.clipboard.writeText(text); } catch(e){ p = Promise.reject(e); }
+  p.then(() => {
+    box.textContent = "프롬프트를 복사했습니다. 새 탭에서 " + name + "에 로그인한 뒤 입력칸에 붙여넣고(Ctrl+V, 휴대폰은 길게 눌러 붙여넣기) 보내세요. 답이 나오면 전체를 복사해 이 페이지 아래 칸에 붙여넣으세요.";
+  }).catch(() => {
+    box.textContent = "자동 복사가 막혀 있습니다. 아래 '프롬프트 직접 보기'를 열어 전체를 선택해 복사한 뒤 " + name + " 탭에 붙여넣으세요.";
+    document.querySelector("details.promptbox").open = true;
+  });
+}));
+$("copy").onclick = async () => {
+  try { await navigator.clipboard.writeText($("prompt").textContent); $("copy").textContent = "복사됨"; }
+  catch(e){ const r = document.createRange(); r.selectNodeContents($("prompt")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); $("copy").textContent = "선택됨: Ctrl+C"; }
+  setTimeout(() => $("copy").textContent = "프롬프트 복사", 1800);
+};
+
+// 3. AI 결과 → 표
+function inl(s){ return esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>"); }
+function md(src){
+  const L = src.replace(/\r/g, "").split("\n"); let h = "", i = 0;
+  const cells = r => r.replace(/^\||\|$/g, "").split("|").map(x => x.trim());
+  while (i < L.length){
+    const l = L[i].trim();
+    if (l.startsWith("|")){
+      const rows = []; while (i < L.length && L[i].trim().startsWith("|")) rows.push(L[i++].trim());
+      let t = "<div class='tablewrap'><table>";
+      rows.forEach((r, k) => { if (/^\|?[\s:|-]+$/.test(r)) return; const tag = k === 0 ? "th" : "td"; t += "<tr>" + cells(r).map(x => "<"+tag+">"+inl(x)+"</"+tag+">").join("") + "</tr>"; });
+      h += t + "</table></div>"; continue;
+    }
+    if (/^#{1,6}\s/.test(l) || /^\*\*[^*]+\*\*$/.test(l)){ h += "<h3>" + inl(l.replace(/^#+\s*/, "").replace(/^\*\*|\*\*$/g, "")) + "</h3>"; i++; continue; }
+    if (/^[-*]\s/.test(l)){ h += "<ul>"; while (i < L.length && /^[-*]\s/.test(L[i].trim())) h += "<li>" + inl(L[i++].trim().slice(2)) + "</li>"; h += "</ul>"; continue; }
+    if (/^\d+\.\s/.test(l)){ h += "<ol>"; while (i < L.length && /^\d+\.\s/.test(L[i].trim())) h += "<li>" + inl(L[i++].trim().replace(/^\d+\.\s/, "")) + "</li>"; h += "</ol>"; continue; }
+    if (l) h += "<p>" + inl(l) + "</p>"; i++;
+  }
+  return h;
+}
+function renderAI(){ const v = $("ai").value.trim(); $("rendered").classList.toggle("hidden", !v); $("rendered").innerHTML = v ? md(v) : ""; }
+$("ai").addEventListener("input", renderAI);
+$("sample").onclick = () => { $("ai").value = SAMPLE.replace("{TEAM}", st.team).replace("{WHO}", st.cur.who); renderAI(); };
+const TYPES = ["개인 사례·체험담","근거 없이 주장만","연구·논문","통계·수치","기관 발표","다른 매체·기사 인용","실명 전문가 인용","익명 전문가 인용","비교 실험"];
+$("go3").onclick = () => {
+  const v = $("ai").value.trim();
+  if (!v){ $("e3").textContent = "AI 결과를 붙여넣어 주세요."; return; }
+  const sec = (v.split(/근거 목록/)[1] || "").split(/1-3|빠져 있는 것/)[0];
+  const rows = sec.split("\n").filter(r => /^\|\s*\d+\s*\|/.test(r.trim()));
+  const types = {};
+  rows.forEach(r => { const c = r.split("|").map(x => x.trim()); const t = TYPES.find(t => (c[3] || "").includes(t)); if (t) types[t] = (types[t] || 0) + 1; });
+  st.cur.ai = v; st.cur.nEvidence = rows.length; st.cur.types = types;
+  $("e3").textContent = ""; save(); show(4);
+};
+
+// 4. 우리 판단
+$("go4").onclick = () => {
+  const g = n => (document.querySelector('input[name="'+n+'"]:checked') || {}).value;
+  const t = g("trust"), r = g("route"), k = g("kind"), w = $("why").value.trim();
+  if (!t || !w || !k){ $("e4").textContent = "신뢰 여부, 이유 한 줄, 문제 유형은 꼭 채워 주세요."; return; }
+  Object.assign(st.cur, {trust:t, why:w, route:r || "", kind:k});
+  st.entries.push(st.cur); st.cur = null;
+  ["link","media","author","date","body","why"].forEach(id => $(id).value = "");
+  document.querySelectorAll("#s4 input[type=radio]").forEach(x => x.checked = false);
+  $("e4").textContent = ""; save(); show(5);
+};
+
+// 5. 조별 기록표
+const KIND = {"①":"① 정보가 틀림·과장", "②":"② 행동이 안 바뀜", "③":"③ 구조 문제"};
+function renderLog(){
+  $("logtitle").innerHTML = esc(st.team) + " 조별 기록표<span class='issuetag'>" + esc(issueLabel(st.issue)) + "</span>";
+  const brought = new Set(st.entries.map(e => e.who));
+  $("logmembers").textContent = "참가자: " + st.people.map(p => brought.has(p) ? p + " ✓" : p).join(", ");
+  $("logbody").innerHTML = st.entries.map(e => {
+    const ev = Object.entries(e.types || {}).map(([k, v]) => esc(k) + " " + v).join("<br>") || (e.nEvidence + "건");
+    return "<tr><td>" + esc(e.who) + "</td><td>" + esc(e.media) + (e.date ? "<br><small>" + esc(e.date) + "</small>" : "") +
+      "</td><td><small>" + ev + "</small></td><td class='mark'>" + esc(e.trust) + "</td><td>" + esc(e.why) +
+      (e.route ? "<br><small>처음 접한 곳: " + esc(e.route) + "</small>" : "") + (e.aiService ? "<br><small>분석: " + esc(e.aiService) + "</small>" : "") + "</td><td>" + esc(KIND[e.kind]) + "</td></tr>";
+  }).join("");
+  const c = {"①":0, "②":0, "③":0}; st.entries.forEach(e => c[e.kind]++);
+  $("tally").innerHTML = "<div>기록한 정보<b>" + st.entries.length + "</b></div>" + Object.keys(c).map(k => "<div>" + KIND[k] + "<b>" + c[k] + "</b></div>").join("");
+  const left = st.people.filter(p => !brought.has(p));
+  $("bridge").textContent = (left.length ? "아직 정보를 넣지 않은 조원: " + left.join(", ") + ". " : "모든 조원이 정보를 하나씩 넣었습니다. ") +
+    "다음 단계 문제 진단표에서, ①이 많으면 커뮤니케이션의 몫이 크고 ③이 많으면 커뮤니케이션만으로는 안 되는 영역입니다.";
+}
+$("more").onclick = () => show(2);
+$("print").onclick = () => window.print();
+$("reset").onclick = () => askConfirm("지금 조의 기록을 모두 지우고 처음부터 시작할까요?", "지우고 새로 시작", "취소", () => { st = {team:"", issue:"", people:[], entries:[], cur:null, step:1}; save(); $("team").value = ""; $("issue").value = ""; renderChips(); show(1); });
+function tableRows(){
+  const rows = [["조","이슈","참가자","가져온 사람","매체","글쓴이","날짜","링크","근거 수","근거 유형","신뢰","이유","처음 접한 곳","문제 유형","사용한 AI"]];
+  st.entries.forEach(e => rows.push([st.team, issueLabel(st.issue), st.people.join(" "), e.who, e.media, e.author, e.date, e.link, e.nEvidence, Object.entries(e.types || {}).map(([k, v]) => k + " " + v).join("; "), e.trust, e.why, e.route, KIND[e.kind], e.aiService || ""]));
+  return rows;
+}
+$("copytsv").onclick = async () => {
+  const text = tableRows().map(r => r.map(x => String(x ?? "").replace(/[\t\n]+/g, " ")).join("\t")).join("\n");
+  const box = $("tsv");
+  try { await navigator.clipboard.writeText(text); $("copied").textContent = "복사했습니다. 엑셀이나 LMS 글쓰기 칸에 붙여넣으세요."; box.classList.add("hidden"); }
+  catch(e){ box.value = text; box.classList.remove("hidden"); box.focus(); box.select(); $("copied").textContent = "자동 복사가 막혀 있어 아래 칸을 선택해 두었습니다. Ctrl+C(휴대폰은 길게 눌러 복사)로 복사하세요."; }
+};
+$("csv").onclick = () => {
+  const q = s => '"' + String(s ?? "").replace(/"/g, '""') + '"';
+  const rows = [["조","이슈","참가자","가져온 사람","매체","글쓴이","날짜","링크","근거 수","근거 유형","신뢰","이유","처음 접한 곳","문제 유형","사용한 AI"]];
+  st.entries.forEach(e => rows.push([st.team, issueLabel(st.issue), st.people.join(" "), e.who, e.media, e.author, e.date, e.link, e.nEvidence, Object.entries(e.types || {}).map(([k, v]) => k + " " + v).join("; "), e.trust, e.why, e.route, KIND[e.kind], e.aiService || ""]));
+  const blob = new Blob(["﻿" + rows.map(r => r.map(q).join(",")).join("\r\n")], {type:"text/csv"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = st.team + "_정보접촉기록.csv"; a.click();
+};
+
+load();
+$("issue").innerHTML = "<option value=''>이슈를 고르세요</option>" + BANK.map(c => "<option value='" + c.no + "'>" + esc(issueLabel(c.no)) + "</option>").join("");
+let handoff = {};
+try { const h = JSON.parse(localStorage.getItem("handoff") || "{}"); if (h.t && Date.now() - h.t < 15 * 60 * 1000) handoff = h; localStorage.removeItem("handoff"); } catch(e){}
+const pTeam = (PARAMS.get("team") || handoff.team || "").trim(), pIssue = PARAMS.get("issue") || String(handoff.issue || "");
+if (pTeam || pIssue){
+  const switching = st.entries.length && ((pTeam && pTeam !== st.team) || (pIssue && pIssue !== String(st.issue)));
+  const apply = () => { if (pTeam) st.team = pTeam; if (issueOf(pIssue)) st.issue = pIssue; st.step = 1; save(); $("team").value = st.team; $("issue").value = st.issue || ""; renderChips(); show(1); };
+  if (switching){
+    setTimeout(() => askConfirm(st.team + "의 기록이 이 기기에 남아 있습니다. " + (pTeam || st.team) + " · " + issueLabel(pIssue) + "로 새로 시작할까요?", "지우고 새로 시작", "기존 기록 보기",
+      () => { st = {team:"", issue:"", people:[], entries:[], cur:null, step:1}; apply(); }), 0);
+  } else if (!st.entries.length){ if (pTeam) st.team = pTeam; if (issueOf(pIssue)) st.issue = pIssue; st.step = 1; save(); }
+}
+if (!PARAMS.has("demo") && location.hash !== "#demo") document.querySelectorAll(".democtl").forEach(el => el.classList.add("hidden"));
+if (IN_FRAME) document.querySelectorAll(".localonly").forEach(el => el.classList.add("hidden"));
+$("team").value = st.team; $("issue").value = st.issue || ""; renderChips();
+let start = st.step || 1;
+if ((start === 3 || start === 4) && !st.cur) start = 2;
+if (start > 1 && !st.team) start = 1;
+show(start);
+</script>
+</body>
+</html>
