@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>조 문제 진단표</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* 레이아웃: 한 줄로 내려가는 서기용 작성지. 조 정보 → 조원 기록 모으기 → 진단표 → 제출 */
+:root{--green:#1f5145;--green2:#2e6b5c;--head:#1f5145;--gold:#b5781f;--gold2:#e9b45a;--mint:#e6efec;--beige:#f3e6cf;--ink:#1d2b27;--muted:#5d6f69;--line:#d5e0dc;--bg:#fbfaf6;--card:#ffffff;--field:#ffffff;--zebra:#f5f8f7;--on:#ffffff;--err:#b23b2e;--warnbg:#fbe9e1}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--green:#2f7a66;--green2:#7cc4ad;--head:#9fd8c5;--gold:#e0a54e;--gold2:#f0c274;--mint:#1f2e2a;--beige:#3a3123;--ink:#e3ece8;--muted:#9fb3ac;--line:#2f403b;--bg:#111816;--card:#18221f;--field:#1d2925;--zebra:#1b2623;--on:#ffffff;--err:#ff8a7a;--warnbg:#3a2219;color-scheme:dark}}
+:root[data-theme="dark"]{--green:#2f7a66;--green2:#7cc4ad;--head:#9fd8c5;--gold:#e0a54e;--gold2:#f0c274;--mint:#1f2e2a;--beige:#3a3123;--ink:#e3ece8;--muted:#9fb3ac;--line:#2f403b;--bg:#111816;--card:#18221f;--field:#1d2925;--zebra:#1b2623;--on:#ffffff;--err:#ff8a7a;--warnbg:#3a2219;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans KR",system-ui,sans-serif;font-size:16px;line-height:1.55}
+.wrap{max-width:880px;margin:0 auto;padding:28px 16px 64px}
+.eyebrow{color:var(--gold);font-weight:700;font-size:13px}
+h1{color:var(--head);font-size:28px;margin:4px 0 8px;text-wrap:balance}
+.lead{color:var(--muted);margin:0 0 18px;font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:16px}
+.card h2{margin:0 0 4px;font-size:19px;color:var(--head)}
+.card h2 b{color:var(--gold);margin-right:6px}
+.hint{color:var(--muted);font-size:14px;margin:0 0 12px}
+label{display:block;font-weight:500;font-size:14px;margin:12px 0 6px}
+label small{color:var(--muted);font-weight:400}
+input[type=text],textarea,select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;background:var(--field);color:var(--ink)}
+textarea{min-height:84px;resize:vertical}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--green2);border-color:transparent}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.quad{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:640px){.row,.quad{grid-template-columns:1fr}}
+.quad > div{border-radius:10px;padding:10px 12px;background:var(--mint)}
+.quad > div:nth-child(2n){background:var(--beige)}
+.quad label{margin-top:0}
+.btn{border:0;border-radius:8px;padding:11px 18px;font:inherit;font-weight:700;cursor:pointer;background:var(--green);color:var(--on);text-decoration:none;display:inline-block}
+.btn.ghost{background:transparent;color:var(--head);border:1px solid var(--head)}
+.btn.gold{background:var(--gold)}
+.btn.small{padding:4px 10px;font-size:13px}
+.btn:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.actions{display:flex;gap:8px;justify-content:space-between;margin-top:16px;flex-wrap:wrap}
+.err{color:var(--err);font-size:14px;margin-top:8px;min-height:1em}
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:600px}
+th{background:var(--green);color:var(--on);text-align:left;padding:7px 8px;font-weight:500;white-space:nowrap}
+td{border-bottom:1px solid var(--line);padding:7px 8px;vertical-align:top}
+tr:nth-child(even) td{background:var(--zebra)}
+td:first-child,td:nth-child(2){white-space:nowrap}
+.mark{font-weight:700;font-size:18px;color:var(--gold);text-align:center}
+.tally{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.tally div{background:var(--mint);border-radius:8px;padding:7px 11px;font-size:14px}
+.tally b{color:var(--head);font-size:17px;margin-left:6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{background:var(--mint);border-radius:999px;padding:4px 6px 4px 12px;font-size:14px;display:flex;align-items:center;gap:4px}
+.chip.warn{background:var(--warnbg)}
+.chip button{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:16px;padding:0 4px}
+.issuetag{display:inline-block;background:var(--green);color:var(--on);border-radius:6px;padding:2px 10px;font-size:13px;font-weight:700;margin-left:6px;vertical-align:middle}
+.copybox{width:100%;min-height:90px;margin-top:10px;font-size:12px}
+.ask{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--card);border-top:2px solid var(--green);box-shadow:0 -6px 24px rgba(0,0,0,.18);padding:14px max(16px,env(safe-area-inset-left,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-right,0px));display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap}
+.ask p{margin:0;font-weight:500}
+.saved{font-size:13px;color:var(--muted)}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">커뮤니케이션이 할 수 있는 것과 없는 것</div>
+  <h1>조 문제 진단표 <span class="issuetag hidden" id="tag"></span></h1>
+  <p class="lead">서기 한 명이 조원들의 공유 코드를 모아 토론한 뒤, 조의 공통 의견을 이 진단표에 씁니다. 쓰는 내용은 이 기기에 자동으로 저장됩니다. 마지막에 조 제출 파일을 받아 LMS에 올립니다.</p>
+
+  <section class="card">
+    <h2><b>1</b>조와 서기</h2>
+    <div class="row">
+      <div><label for="team">조</label><select id="team"></select></div>
+      <div><label for="issue">조 이슈</label><select id="issue"></select></div>
+    </div>
+    <div class="row">
+      <div><label for="sname">서기 이름</label><input type="text" id="sname" placeholder="예: 김민지"></div>
+      <div><label for="ssid">서기 학번</label><input type="text" id="ssid" inputmode="numeric" placeholder="예: 202612345"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><b>2</b>조원 기록 모으기</h2>
+    <p class="hint">조원들이 단톡방에 올린 공유 코드를 모두 복사해 아래 칸에 붙여 넣으세요. 대화 내용이 섞여 있어도 코드만 골라 읽습니다. 이 기기에 서기 본인의 기록이 있으면 자동으로 함께 들어갑니다.</p>
+    <label for="codes">공유 코드 붙여넣기</label>
+    <textarea id="codes" placeholder="IC2:로 시작하는 코드들을 붙여 넣으세요"></textarea>
+    <div class="actions" style="margin-top:8px"><span class="saved" id="codemsg"></span><button class="btn" id="readcodes">코드 읽기</button></div>
+    <div class="chips" id="members"></div>
+    <div class="tally" id="tally"></div>
+    <div class="tablewrap"><table><thead><tr><th>조원</th><th>정보</th><th>근거</th><th>신뢰</th><th>이유</th><th>문제</th></tr></thead><tbody id="pool"></tbody></table></div>
+    <p class="hint" id="poolhint" style="margin-top:10px"></p>
+  </section>
+
+  <section class="card">
+    <h2><b>3</b>문제 진단</h2>
+    <p class="hint">모은 기록을 보며 토론한 결과를 조의 공통 의견으로 씁니다.</p>
+    <label for="f_now">무엇이 일어나고 있나</label>
+    <textarea id="f_now" placeholder="조원들이 모은 정보에서 확인된 현상"></textarea>
+    <label for="f_should">무엇이 일어나야 하나</label>
+    <textarea id="f_should" placeholder="바람직한 상태"></textarea>
+    <label for="f_who">누가 영향을 받나</label>
+    <textarea id="f_who" style="min-height:60px"></textarea>
+    <label for="f_level">문제의 수준 <small>개인 ~ 사회</small></label>
+    <select id="f_level">
+      <option value="">고르세요</option>
+      <option>개인</option><option>대인 관계</option><option>조직·지역사회</option><option>사회·제도</option><option>여러 수준에 걸침</option>
+    </select>
+    <label for="f_levelwhy">그렇게 본 이유</label>
+    <input type="text" id="f_levelwhy">
+  </section>
+
+  <section class="card">
+    <h2><b>4</b>해결책 분해</h2>
+    <p class="hint">해결책을 네 칸에 나눠 씁니다. 칸이 비면 그 영역은 이 문제에서 할 일이 적다는 뜻일 수 있습니다.</p>
+    <div class="quad">
+      <div><label for="f_comm">커뮤니케이션</label><textarea id="f_comm" placeholder="캠페인, 교육, 정보 공개, 미디어 리터러시"></textarea></div>
+      <div><label for="f_policy">정책·규제</label><textarea id="f_policy" placeholder="표시 기준, 광고 규제, 처방 제한"></textarea></div>
+      <div><label for="f_product">제품</label><textarea id="f_product" placeholder="성분, 포장, 가격, 진열"></textarea></div>
+      <div><label for="f_service">서비스</label><textarea id="f_service" placeholder="상담, 공간, 프로그램, 플랫폼 기능"></textarea></div>
+    </div>
+    <label for="f_role">커뮤니케이션이 맡을 몫 <small>한 줄</small></label>
+    <input type="text" id="f_role" placeholder="이 문제에서 커뮤니케이션은 ___은 할 수 있지만 ___은 못 한다">
+  </section>
+
+  <section class="card">
+    <h2><b>5</b>조 제출</h2>
+    <p class="hint" id="submithint"></p>
+    <div class="err" id="err"></div>
+    <div class="actions">
+      <button class="btn ghost" id="reset">진단표 지우기</button>
+      <span style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" id="copytext">진단표 복사</button><button class="btn localonly" id="csv">조 제출 파일 내려받기</button></span>
+    </div>
+    <textarea id="textbox" class="copybox hidden" readonly aria-label="복사할 진단표"></textarea>
+    <p class="hint" id="msg" style="margin:6px 0 0"></p>
+  </section>
+  <p class="saved" id="savedat"></p>
+</div>
+
+<script>
+const BANK = [{"no": 1, "name": "제로 음료", "hook": "\"제로니까 괜찮다\"는 맞는 말일까?", "what": "국내 제로 탄산음료 시장은 2020년 924억 원에서 2022년 3,683억 원으로 2년 만에 약 4배가 됐고, 2024년 1~4월 GS25 탄산음료 매출의 절반 이상(52.3%)이 제로 제품이었다(뉴스토마토). 한국소비자원이 14개 제품을 시험한 결과 감미료는 하루 허용섭취량의 3~13%로 높지 않았지만, 소비자원은 다이어트 목적으로 제로 음료를 마시는 것은 바람직하지 않다고 밝혔다.", "issue": "2023년 IARC가 아스파탐을 발암 가능 물질(2B군)로 분류했지만 식약처는 현재 섭취 수준에서 안전하다며 기준을 유지했다. 이후 에리스리톨과 혈전 위험을 잇는 연구도 보도됐다. 쟁점은 '기준 안이라 안전하다'와 '건강에 좋다'가 다른 말이라는 점이다.", "affected": ["다이어트 중인 20~30대", "당뇨·심혈관 질환자", "카페인에 민감한 사람과 어린이", "물 대신 제로 탄산을 마시는 사람"], "gain": "제로 라인을 늘리는 음료·주류·빙과 기업, 유통업체, 감미료 제조업체", "lose": "'제로 = 건강'으로 믿고 많이 마시는 소비자, 물 마시기를 권하는 공중보건 메시지", "pro": "소비자원이 '다이어트용으로 권하지 않는다'고 공식 발표한 뒤에도 업계는 제로 라인을 계속 늘렸다. 정보 하나로 매대를 채운 마케팅을 이길 수 있을까?", "con": "제품 자체는 기준 안에서 안전하다(식약처). 문제가 제품이 아니라 '제로 = 건강'이라는 인식이라면, 인식을 바로잡는 정보 제공이 가장 알맞은 대응이다.", "sources": [{"title": "\"제로니까 괜찮아\" 물처럼 마셨는데… 3시간 뒤 '혈전 리스크' 2배 [건강+]", "outlet": "세계일보 김현주", "date": "2026-02-12", "url": "https://www.segye.com/newsView/20260212502498", "evidence": "해외 세포 실험과 약 4,000명 추적 연구 인용. 제목이 강하고, 기사 스스로 세포 실험의 한계를 밝힘", "media": "세계일보", "author": "김현주"}, {"title": "식약처 \"아스파탐 안전성 문제없어...현행 기준 유지\"", "outlet": "데일리팜 이혜경", "date": "2023-07-14", "url": "https://www.dailypharm.com/user/news/26245", "evidence": "식약처 공식 입장과 섭취량 통계. 60kg 성인은 제로콜라 약 55캔을 마셔야 허용량에 이름", "media": "데일리팜", "author": "이혜경"}, {"title": "'제로음료' 14개 제품 비교정보 제공", "outlet": "한국소비자원 (정책브리핑)", "date": "2024-08-01", "url": "https://www.korea.kr/briefing/policyBriefingView.do?newsId=156643946", "evidence": "공공기관 시험 데이터. 감미료·열량·카페인 수치와 WHO 권고 인용", "media": "한국소비자원 (정책브리핑)", "author": ""}, {"title": "(제로의 진실)① \"여기도 제로, 저기도 제로\"…무차별 마케팅 폭격", "outlet": "뉴스토마토 김충범", "date": "2024-07-22", "url": "https://newstomato.com/ReadNews.aspx?no=1235781", "evidence": "시장 규모와 편의점 판매 데이터, 유통업계 관계자의 마케팅 전략 발언", "media": "뉴스토마토", "author": "김충범"}]}, {"no": 2, "name": "fridge cigarette", "hook": "다이어트 콜라 한 캔이 '담배 타임'이 될 때", "what": "2025년 6월 미국 틱톡에서 차가운 다이어트 콜라를 따는 순간을 담배 피우는 휴식에 빗댄 '냉장고 담배(fridge cigarette)' 영상이 380만 회 넘게 조회되며 퍼졌다(TODAY). 청년 시장조사 기관 YPulse 조사에서는 18~24세의 50%가 기분이 가라앉을 때 탄산음료로 스스로를 달랜다고 답했다.", "issue": "담배를 대신하는 '건강한 휴식'인지, 스트레스를 탄산·카페인·감미료로 푸는 또 다른 의존 습관인지가 쟁점이다. 기업이 돈을 쓰지 않았는데 밈이 사실상 광고 역할을 한다는 점도 논란이다. 국내 보도는 거의 없어, 한국에서도 통할 이야기인지 따져 볼 만하다.", "affected": ["18~24세 Z세대", "사무직 청년", "흡연 대신 쉬는 방법을 찾는 사람", "단 음료로 기분을 달래는 사람"], "gain": "광고비 없이 바이럴 효과를 얻는 탄산음료 기업, 플랫폼과 인플루언서", "lose": "습관적으로 많이 마시게 되는 청년층, 물 마시기·스트레스 관리를 권하는 보건 메시지", "pro": "젊은 층은 탄산음료가 건강하지 않다는 것을 이미 안다. 아는 사람에게 정보를 더 주는 것으로는 부족하고, 휴식 공간과 업무 문화, 자판기 진열이 바뀌어야 한다.", "con": "이 습관은 밈, 곧 커뮤니케이션이 만든 것이다. 그렇다면 다른 밈으로 '건강한 휴식 의식'을 똑같이 유행시킬 수 있다.", "sources": [{"title": "\"다이어트 코크냐 코크 제로냐\"…미국 뒤흔드는 '제로콜라 내전'", "outlet": "이투데이 김해욱", "date": "2026-05-30", "url": "https://www.etoday.co.kr/news/view/2587505", "evidence": "국내 유일 언급(한 문장). 미국 제로 음료 판매 데이터와 마케팅 교수 분석, WSJ 재인용", "media": "이투데이", "author": "김해욱"}, {"title": "Have a 'Fridge Cigarette': Diet Coke Is the New Smoke Break", "outlet": "TODAY Joseph Lamour", "date": "2025-06-27", "url": "https://www.today.com/today/amp/rcna215271", "evidence": "유행의 시작과 조회수. 전문가 인용이나 기업 입장은 없음", "media": "TODAY", "author": "Joseph Lamour"}, {"title": "'Fridge cigarette' is Gen Z's new Diet Coke obsession that concerns health experts", "outlet": "Fox News Andrea Margolis", "date": "2025-07-07", "url": "https://www.foxnews.com/food-drink/fridge-cigarette-gen-zs-diet-coke-obsession-concerns-health-experts", "evidence": "심리치료사·자연요법 의사 인용. 한 전문가의 도파민 주장은 근거 연구 없음", "media": "Fox News", "author": "Andrea Margolis"}, {"title": "Gen Z's latest vice? The \"fridge cigarette.\"", "outlet": "YPulse", "date": "2025-07-10", "url": "https://www.ypulse.com/newsfeed/2025/07/10/gen-zs-latest-vice-the-fridge-cigarette/", "evidence": "18~24세 설문 통계. 표본 크기와 조사 방법은 밝히지 않음", "media": "YPulse", "author": ""}]}, {"no": 3, "name": "술방·먹방", "hook": "보는 것만으로 먹고 마시는 습관이 바뀔까?", "what": "2024년 국정감사 자료에 따르면 유튜브에서 '술방'으로 검색되는 조회수 상위 100개 영상 모두에 문제음주 장면이 있었고, 연령 제한이 걸린 영상은 하나도 없었다(세계일보). 청소년 51,850명을 분석한 연구에서는 먹방·쿡방을 자주 볼수록 패스트푸드, 단 음료, 야식 섭취와 더 많이 연관됐다(Hong, 2024).", "issue": "정부의 미디어 음주 가이드라인과 먹방 가이드라인 구상은 모두 강제력 없는 '권고'여서, '효과가 없다'는 비판과 '국가가 개인 방송에 개입한다'는 비판을 동시에 받는다. 먹방과 식습관 연구는 상관관계만 보여 주고 인과관계는 입증하지 못했다.", "affected": ["청소년과 어린이 시청자", "자주 시청하는 학생층", "크리에이터와 출연 연예인", "주류·외식·배달 업계"], "gain": "조회수와 광고 수익을 얻는 크리에이터·플랫폼, 노출 효과를 얻는 주류·식품 업계", "lose": "왜곡된 음주·식사 규범에 노출되는 청소년, 비만·음주 폐해 비용을 떠안는 건강보험", "pro": "가이드라인을 고친 뒤에도 유튜브 상위 100개 술방 영상 중 연령 제한은 0개였고, 방송에서 적발된 음주 장면 86건 중 88%가 방심위 심의에서 '문제없음'이었다. 권고는 작동하지 않았다.", "con": "규제 없이도 술방이 줄고 맨정신 토크쇼가 자리 잡았다는 보도가 있다(데일리안 2026). 시청자 반응과 여론이 시장을 바꾼 사례다.", "sources": [{"title": "잘 나가는 드라마·예능 프로 88%서 등장한 '이 장면' [2024 국정감사]", "outlet": "세계일보 정재영", "date": "2024-10-14", "url": "https://www.segye.com/newsView/20241014504804", "evidence": "한국건강증진개발원 모니터링 통계와 방심위 심의 결과, 국회의원 발언", "media": "세계일보", "author": "정재영"}, {"title": "[쿠키영상] \"국가 비만 관리해야\" 먹방 규제 시동거는 정부… \"먹방이 비만 유발? 근거는?\"", "outlet": "쿠키뉴스 김성일", "date": "2018-07-26", "url": "https://www.kukinews.com/article/view/kuk201807260311", "evidence": "먹방 가이드라인 논쟁의 출발점. 정부 발표와 시민 반발을 함께 실음", "media": "쿠키뉴스", "author": "김성일"}, {"title": "Effects of watching Mukbang and Cookbang videos on adolescents' dietary habits and mental health", "outlet": "대한지역사회영양학회지 홍승희", "date": "2024-04-30", "url": "https://koreascience.or.kr/article/JAKO202414857710828.page", "evidence": "청소년건강행태조사 51,850명 분석 논문. 횡단 연구라 인과관계는 아님", "media": "대한지역사회영양학회지", "author": "홍승희"}, {"title": "\"취해야 솔직하다고?\"…술방 밀어낸 맨정신 토크 [취하지 않는 사회②]", "outlet": "데일리안 박정선", "date": "2026-07-08", "url": "https://www.dailian.co.kr/news/view/1664317/", "evidence": "업계 쪽 시각. 익명 제작사 관계자 발언 위주이고 수치는 없음", "media": "데일리안", "author": "박정선"}]}, {"no": 4, "name": "수입 식품 불안", "hook": "검사 결과는 '불검출'인데 왜 못 믿을까?", "what": "일본은 2023년 8월부터 2년간 14차례에 걸쳐 원전 오염수 약 11만 톤을 방류했고, 해수부는 2025년 수산물 약 1만1천 건을 검사해 부적합이 없었다고 밝혔다(뉴시스). 그런데 식약처 인식조사에서 정부 방사능 관리를 신뢰한다는 응답은 2021년 53.5%에서 2023년 16.3%로 떨어졌다(세계일보).", "issue": "검사 결과는 계속 '불검출'인데 신뢰는 오히려 떨어졌다. 이것을 과학의 문제로 볼지, 투명성과 신뢰의 문제로 볼지가 쟁점이다. 한편 2021년 '알몸 배추' 영상 뒤 줄었던 중국산 김치 수입은 2025년 가격 때문에 역대 최대가 됐다. 불안과 실제 행동이 어긋난다.", "affected": ["학부모와 어린이(급식)", "국내 어민과 수산업계", "김치 제조업체와 외식 자영업자", "검사를 맡은 식약처·해수부"], "gain": "불안할 때는 '국산 100%'를 내세우는 업체, 가격이 오르면 값싼 수입산을 쓰는 식당과 수입업체", "lose": "소비 위축을 겪는 국내 어민, 값싼 수입산과 경쟁하는 국산 김치 업계, 신뢰를 잃은 정부", "pro": "정부가 '불검출'을 반복 발표하는 동안 신뢰도는 16.3%까지 떨어졌다. 정보가 부족한 게 아니라 제도와 신뢰가 문제이므로 원산지 표시 같은 제도를 고쳐야 한다.", "con": "'알몸 김치' 공포도 4년 만에 사라졌다. 실제 위험이 낮다면 정확한 정보 공개와 시간이 불안을 해소한다.", "sources": [{"title": "2년간 11만t 방류…국내 방사능 검사 결과 '불검출' [日 원전 오염수 방류 2년]②", "outlet": "뉴시스 홍세희", "date": "2025-09-07", "url": "https://www.newsis.com/view/NISX20250902_0003313017", "evidence": "방류량과 해수부 검사 건수·결과 등 공식 데이터, 환경단체 반론", "media": "뉴시스", "author": "홍세희"}, {"title": "올해 후쿠시마産 명란젓 16t 수입…'일본산'으로만 표시", "outlet": "세계일보 정재영", "date": "2024-10-04", "url": "https://www.segye.com/newsView/20241004506536", "evidence": "식약처 인식조사 수치와 원산지 표시 문제 제기. 조사 표본 수는 기사에 없음", "media": "세계일보", "author": "정재영"}, {"title": "\"안 먹어요\"…중국산 김치 포비아로 수입량 줄었다", "outlet": "뉴스토마토 유승호", "date": "2021-05-24", "url": "https://newstomato.com/ReadNews.aspx?no=1046361", "evidence": "'알몸 배추' 직후 수입 통계와 당국 검사 결과, 업계의 '국산' 마케팅", "media": "뉴스토마토", "author": "유승호"}, {"title": "\"'알몸김치'보다 '金배추'가 더 무섭다\"…중국산 찾는 식당들", "outlet": "세계일보 국윤진", "date": "2025-07-24", "url": "https://www.segye.com/newsView/20250723515445", "evidence": "김치 수입액 역대 최대와 국산·중국산 가격 차이 등 무역 통계", "media": "세계일보", "author": "국윤진"}]}, {"no": 5, "name": "비만치료제", "hook": "'기적의 다이어트약', 누구를 위한 약인가?", "what": "2025년 상반기 비만약 처방은 114만여 건이었고, 위고비 처방은 2024년 한 해 약 5만 건에서 2025년 상반기에만 약 34만 건으로 늘었다(머니투데이). 2025년 1~9월 온라인 불법 판매·광고 적발은 8월에 나온 마운자로가 218건으로 위고비(141건)를 넘었다(데일리팜, 식약처 국감 자료).", "issue": "처방 기준은 BMI 30 이상, 또는 27 이상이면서 동반질환이 있는 경우인데, 정상 체중인 사람도 미용 목적으로 처방을 요구하고 온라인·해외에서 약을 구한다. 반대로 건강보험이 적용되지 않아 정말 치료가 필요한 환자는 약값 때문에 쓰지 못한다.", "affected": ["미용 목적으로 약을 쓰는 20~30대", "청소년", "약값을 감당하기 어려운 고도비만 환자", "처방 요구를 받는 동네 의원"], "gain": "제약사(국내 비만약 시장이 1년 새 약 3배), 기준을 느슨하게 처방하는 일부 의원, 불법 판매자", "lose": "부작용을 겪는 오남용 사용자, 약값 부담이 큰 실제 환자, 단속을 맡는 식약처", "pro": "식약처가 과대광고 자제 공문을 보내고 홍보를 검토했지만, 1년 뒤 마운자로 불법 광고는 위고비를 넘어섰다. 결국 정부도 비대면 처방 제한 같은 규제로 방향을 틀었다.", "con": "오남용의 출발점은 마른 몸에 대한 선망과 '기적의 약'이라는 이야기다. 수요를 만드는 것이 인식이라면, 인플루언서 채널에 맞춘 정확한 메시지가 가장 직접적인 대응이다.", "sources": [{"title": "[단독] 너도나도 '기적의 비만약'…상반기 비만약 처방 114만여건", "outlet": "머니투데이 박미주", "date": "2025-08-25", "url": "https://www.mt.co.kr/thebio/2025/08/25/2025082515322849166", "evidence": "국회의원실 처방 통계와 매출 데이터, 의원장 발언과 일화", "media": "머니투데이", "author": "박미주"}, {"title": "국감장 달군 '위고비' 열풍…학회·식약처도 오남용 우려", "outlet": "메디칼타임즈 임수민", "date": "2024-10-23", "url": "https://medicaltimes.com/Mobile/News/NewsView.html?ID=1161050", "evidence": "대한비만학회 성명과 식약처장 국감 답변", "media": "메디칼타임즈", "author": "임수민"}, {"title": "8월 출시 마운자로, 온라인 불법광고 위고비보다 많아", "outlet": "데일리팜 이탁순", "date": "2025-10-20", "url": "https://dailypharm.com/user/news/1181", "evidence": "식약처 국감 업무보고의 적발 건수와 정부 대응 목록", "media": "데일리팜", "author": "이탁순"}, {"title": "마운자로 사러 일본 찾는 한국인 급증…몇몇 병원 SNS 성지", "outlet": "주간경향 이용욱", "date": "2026-09-13", "url": "https://weekly.khan.co.kr/article/202609131429001", "evidence": "한일 가격 차이와 개인 일화, SNS 게시글. 일본 언론 재인용", "media": "주간경향", "author": "이용욱"}]}, {"no": 6, "name": "러닝·근력운동", "hook": "운동 열풍인데 왜 운동 안 하는 사람은 그대로일까?", "what": "문체부 조사에서 주 1회 이상 생활체육 참여율은 62.9%로 올랐지만, 10대는 43.2%에 그쳤다(머니투데이). 인스타그램 '러닝' 해시태그 게시물은 2023년 말 약 200만 건에서 2025년 9월 400만 건을 넘었다(매경이코노미).", "issue": "러닝크루의 소음과 길 막기 민원이 늘자 서초구는 반포종합운동장에서 5인 이상 단체 달리기를 제한했지만, 과잉 규제라는 반론도 있다(뉴시스). 운동하지 않는 이유로는 시간 부족(61.3%)과 시설 접근성 부족(31.3%)이 꼽혔다.", "affected": ["SNS를 활발히 쓰는 20~30대 러너", "공원을 함께 쓰는 주민과 산책객", "운동 참여율이 가장 낮은 10대", "시간·비용·시설 때문에 운동 못 하는 사람"], "gain": "스포츠·패션 브랜드와 플랫폼, 마라톤 대회 주최 측", "lose": "공간 갈등을 겪는 주민, 민원을 떠안은 지자체, 부상을 입은 초보 러너, 운동할 여건이 안 되는 사람", "pro": "갈등의 뿌리는 공간 부족이다. 러너는 단체로 뛸 곳이 없다고 반발하고, 조례로도 제재하기 어렵다. 매너 캠페인으로는 같은 공간을 두고 벌어지는 충돌을 풀 수 없다.", "con": "러닝크루는 SNS로 모이는 공동체다. 인원을 제한하기보다 크루와 브랜드가 에티켓을 직접 만들어 퍼뜨리는 편이 더 빠르고 반발도 적다.", "sources": [{"title": "'5명 제한' 규칙까지 생긴 러닝크루 논란…제재가 능사?", "outlet": "뉴시스 박대로", "date": "2024-10-08", "url": "https://www.newsis.com/view/NISX20241008_0002912290", "evidence": "지자체별 대응 사례와 민원, 연구자 분석", "media": "뉴시스", "author": "박대로"}, {"title": "\"생활체육 걷기-보디빌딩-등산 순\" 문체부, 국민 9000명 조사 결과 발표", "outlet": "머니투데이 신화섭", "date": "2026-01-19", "url": "https://www.mt.co.kr/sports/2026/01/19/2026011912100485038", "evidence": "문체부 공식 조사 통계. 연령별 참여율과 운동하지 않는 이유", "media": "머니투데이", "author": "신화섭"}, {"title": "러닝 인구 천만 시대 '런심'의 경제학 [스페셜리포트]", "outlet": "매경이코노미 나건웅·최창원", "date": "2025-09-18", "url": "https://v.daum.net/v/20250918070600267", "evidence": "해시태그 수와 카드 소비 데이터. '러닝 인구 천만'은 출처 없는 표현", "media": "매경이코노미", "author": "나건웅·최창원"}, {"title": "등산·러닝 무리했더니 발바닥 찌릿… 가을철 '족저근막염 주의보' [건강+]", "outlet": "세계일보 이복진", "date": "2026-10-19", "url": "https://www.segye.com/newsView/20261018512501", "evidence": "심평원 환자 통계와 정형외과 교수 발언. 젊은 러너 부상 증가를 직접 보여 주진 않음", "media": "세계일보", "author": "이복진"}]}];
+const FORM_TEAM = "조진단표 v1";
+const GOAL = 2;
+const TEAMS = Array.from({length: 12}, (_, i) => (i + 1) + "조");
+const KIND = {"①":"① 정보가 틀림·과장", "②":"② 행동이 안 바뀜", "③":"③ 구조 문제"};
+const FIELDS = [["f_now","무엇이 일어나고 있나"],["f_should","무엇이 일어나야 하나"],["f_who","누가 영향을 받나"],["f_level","문제의 수준"],["f_levelwhy","수준 판단 이유"],
+  ["f_comm","해결책: 커뮤니케이션"],["f_policy","해결책: 정책·규제"],["f_product","해결책: 제품"],["f_service","해결책: 서비스"],["f_role","커뮤니케이션이 맡을 몫"]];
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const issueOf = no => BANK.find(c => String(c.no) === String(no));
+const issueLabel = no => { const c = issueOf(no); return c ? String(c.no).padStart(2, "0") + " " + c.name : ""; };
+const IN_FRAME = (() => { try { return window.self !== window.top; } catch(e){ return true; } })();
+const PARAMS = new URLSearchParams(location.search);
+let d = {team:"", issue:"", sname:"", ssid:"", members:{}, fields:{}};
+
+function save(){ try{ localStorage.setItem("teamdiag", JSON.stringify(d)); $("savedat").textContent = "이 기기에 저장됨 " + new Date().toLocaleTimeString("ko-KR", {hour:"2-digit", minute:"2-digit"}); }catch(e){ $("savedat").textContent = "이 브라우저는 저장이 막혀 있어, 새로고침하면 내용이 사라집니다."; } }
+function load(){ try{ const v = JSON.parse(localStorage.getItem("teamdiag")); if (v && v.members) d = Object.assign(d, v); }catch(e){} }
+function askConfirm(msg, yes, no, onYes){
+  document.querySelectorAll(".ask").forEach(x => x.remove());
+  const bar = document.createElement("div"); bar.className = "ask"; bar.setAttribute("role", "alertdialog");
+  const p = document.createElement("p"); p.textContent = msg;
+  const y = document.createElement("button"); y.className = "btn"; y.textContent = yes;
+  const n = document.createElement("button"); n.className = "btn ghost"; n.textContent = no;
+  y.onclick = () => { bar.remove(); onYes(); }; n.onclick = () => bar.remove();
+  bar.append(p, y, n); document.body.appendChild(bar); y.focus();
+}
+
+// 공유 코드
+function fromB64url(s){ s = s.replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "="; const bin = atob(s); return new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0))); }
+function decode(code){
+  const o = JSON.parse(fromB64url(code.slice(4)));
+  return {team:o.t, issue:String(o.i), name:o.n, at:o.at || 0, entries:(o.e || []).map(a => ({media:a[0], date:a[1], link:a[2], trust:a[3], kind:a[4], why:a[5], n:a[6], types:a[7]}))};
+}
+function addMember(m){
+  const prev = d.members[m.name];
+  if (prev && prev.at > m.at) return "older";
+  d.members[m.name] = m; return prev ? "updated" : "added";
+}
+$("readcodes").onclick = () => {
+  const codes = ($("codes").value.match(/IC2:[A-Za-z0-9_-]+/g) || []);
+  if (!codes.length){ $("codemsg").textContent = "IC2:로 시작하는 코드를 찾지 못했습니다."; return; }
+  let ok = 0, bad = 0, other = [];
+  codes.forEach(c => { try { const m = decode(c); addMember(m); ok++; if (d.team && m.team !== d.team) other.push(m.name + "(" + m.team + ")"); } catch(e){ bad++; } });
+  $("codes").value = "";
+  $("codemsg").textContent = "코드 " + ok + "개를 읽었습니다." + (bad ? " 깨진 코드 " + bad + "개는 건너뛰었습니다. 다시 복사해 달라고 하세요." : "") + (other.length ? " 다른 조 코드: " + other.join(", ") : "");
+  save(); renderPool();
+};
+function includeOwn(){
+  try {
+    const v = JSON.parse(localStorage.getItem("infolog"));
+    if (!v || v.v !== 2 || !v.name || !(v.entries || []).length) return;
+    const at = Math.max(...v.entries.map(e => Date.parse(e.at || 0) || 0));
+    addMember({team:v.team, issue:String(v.issue), name:v.name, at, own:true, entries:v.entries.map(e => ({media:e.media, date:e.date || "", link:e.link || "", trust:e.trust, kind:e.kind, why:e.why, n:e.nEvidence || 0, types:Object.entries(e.types || {}).map(([k, x]) => k + " " + x).join("; ")}))});
+    if (!d.team) d.team = v.team; if (!d.issue) d.issue = String(v.issue);
+    if (!d.sname) d.sname = v.name; if (!d.ssid) d.ssid = v.sid || "";
+  } catch(e){}
+}
+function memberList(){ return Object.values(d.members).sort((a, b) => a.name.localeCompare(b.name, "ko")); }
+function renderPool(){
+  const ms = memberList();
+  $("members").innerHTML = ms.map(m => {
+    const warn = (d.team && m.team !== d.team) || (d.issue && m.issue !== String(d.issue)) || m.entries.length < GOAL;
+    return "<span class='chip" + (warn ? " warn" : "") + "'>" + esc(m.name) + (m.own ? " (서기)" : "") + " · " + m.entries.length + "개" +
+      (d.team && m.team !== d.team ? " · " + esc(m.team) : "") + (d.issue && m.issue !== String(d.issue) ? " · 다른 이슈" : "") +
+      "<button type='button' title='빼기' data-n='" + esc(m.name) + "'>×</button></span>";
+  }).join("");
+  $("members").querySelectorAll("button").forEach(b => b.onclick = () => askConfirm(b.dataset.n + "의 기록을 뺄까요?", "빼기", "취소", () => { delete d.members[b.dataset.n]; save(); renderPool(); }));
+  const es = ms.flatMap(m => m.entries.map(e => Object.assign({who:m.name}, e)));
+  const c = (k, v) => es.filter(e => e[k] === v).length;
+  $("tally").innerHTML = es.length ? "<div>조원<b>" + ms.length + "</b></div><div>정보<b>" + es.length + "</b></div><div>신뢰 O/△/X<b>" + c("trust","O") + " / " + c("trust","△") + " / " + c("trust","X") + "</b></div>" +
+    "<div>①/②/③<b>" + c("kind","①") + " / " + c("kind","②") + " / " + c("kind","③") + "</b></div>" : "";
+  $("pool").innerHTML = es.map(e => "<tr><td>" + esc(e.who) + "</td><td>" + (e.link ? "<a href='" + esc(e.link) + "' target='_blank' rel='noopener'>" + esc(e.media) + "</a>" : esc(e.media)) + (e.date ? "<br><small>" + esc(e.date) + "</small>" : "") +
+    "</td><td><small>" + esc(e.types || (e.n + "건")) + "</small></td><td class='mark'>" + esc(e.trust) + "</td><td>" + esc(e.why) + "</td><td>" + esc(KIND[e.kind] || e.kind) + "</td></tr>").join("") ||
+    "<tr><td colspan='6'>아직 모은 기록이 없습니다. 조원들의 공유 코드를 붙여 넣고 '코드 읽기'를 누르세요.</td></tr>";
+  const k3 = c("kind","③"), k1 = c("kind","①");
+  $("poolhint").textContent = !es.length ? "" : k3 > k1 ? "③ 구조 문제가 더 많습니다. 정책·제품·서비스 칸에 쓸 것이 많을 수 있습니다."
+    : k1 > k3 ? "① 정보 문제가 더 많습니다. 커뮤니케이션이 맡을 몫이 클 수 있습니다." : "①과 ③이 비슷합니다. 커뮤니케이션과 다른 해결책을 함께 따져 보세요.";
+  renderSubmit();
+}
+
+// 진단표 입력 자동 저장
+FIELDS.forEach(([id]) => $(id).addEventListener("input", () => { d.fields[id] = $(id).value; save(); renderSubmit(); }));
+$("f_level").addEventListener("change", () => { d.fields.f_level = $("f_level").value; save(); renderSubmit(); });
+["sname","ssid"].forEach(id => $(id).addEventListener("input", () => { d[id] = $(id).value.trim(); save(); renderSubmit(); }));
+$("team").onchange = () => { d.team = $("team").value; save(); renderPool(); renderTag(); };
+$("issue").onchange = () => { d.issue = $("issue").value; save(); renderPool(); renderTag(); };
+function renderTag(){ const t = $("tag"); t.classList.toggle("hidden", !d.team); t.textContent = d.team + (d.issue ? " · " + issueLabel(d.issue) : ""); }
+
+// 제출
+function missing(){
+  const m = [];
+  if (!d.team) m.push("조"); if (!d.issue) m.push("조 이슈"); if (!d.sname) m.push("서기 이름");
+  if (!/^\d{6,12}$/.test(d.ssid || "")) m.push("서기 학번");
+  if (!memberList().length) m.push("조원 기록");
+  FIELDS.forEach(([id, name]) => { if (!["f_levelwhy"].includes(id) && !(d.fields[id] || "").trim()) m.push(name); });
+  return m;
+}
+function fileName(){ return (d.team + "_조진단표_" + d.sname + ".csv").replace(/[\\/:*?"<>|\s]+/g, ""); }
+function renderSubmit(){
+  const m = missing();
+  $("submithint").textContent = m.length ? "아직 비어 있는 칸: " + m.join(", ") + "." :
+    (IN_FRAME ? "다 채웠습니다. 이 화면에서는 파일을 받을 수 없으니 '진단표 복사'로 LMS에 붙여 넣으세요." : "다 채웠습니다. '조 제출 파일 내려받기'로 받은 파일(" + fileName() + ")을 LMS에 올리세요.");
+}
+function rows(){
+  const ms = memberList(), es = ms.flatMap(x => x.entries);
+  const cnt = (k, v) => es.filter(e => e[k] === v).length;
+  const head = ["양식","조","이슈","서기 이름","서기 학번","조원","조원 기록 수","신뢰 분포(O/△/X)","문제 분포(①/②/③)"].concat(FIELDS.map(f => f[1]), ["작성 시각","조원 기록"]);
+  const pool = ms.map(x => x.entries.map(e => x.name + " | " + e.media + " | " + e.trust + " | " + (KIND[e.kind] || e.kind) + " | " + e.why).join("\n")).join("\n");
+  const row = [FORM_TEAM, d.team, issueLabel(d.issue), d.sname, d.ssid, ms.map(x => x.name).join(", "), es.length,
+    cnt("trust","O") + "/" + cnt("trust","△") + "/" + cnt("trust","X"), cnt("kind","①") + "/" + cnt("kind","②") + "/" + cnt("kind","③")]
+    .concat(FIELDS.map(f => d.fields[f[0]] || ""), [new Date().toISOString(), pool]);
+  return [head, row];
+}
+$("csv").onclick = () => {
+  const m = missing(); if (m.length){ $("err").textContent = "먼저 채워 주세요: " + m.join(", "); return; }
+  $("err").textContent = "";
+  const q = s => '"' + String(s ?? "").replace(/"/g, '""') + '"';
+  const blob = new Blob(["﻿" + rows().map(r => r.map(q).join(",")).join("\r\n")], {type:"text/csv"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = fileName(); a.click();
+  $("msg").textContent = "조 제출 파일을 내려받았습니다. " + fileName() + " 파일을 LMS에 올리세요.";
+};
+$("copytext").onclick = async () => {
+  const [h, r] = rows();
+  const text = h.map((k, i) => k + ": " + String(r[i] ?? "")).join("\n");
+  const box = $("textbox");
+  try { await navigator.clipboard.writeText(text); $("msg").textContent = "진단표를 복사했습니다. LMS 글쓰기 칸에 붙여 넣으세요."; box.classList.add("hidden"); }
+  catch(e){ box.value = text; box.classList.remove("hidden"); box.focus(); box.select(); $("msg").textContent = "자동 복사가 막혀 아래 칸을 선택해 두었습니다. Ctrl+C(휴대폰은 길게 눌러 복사)로 복사하세요."; }
+};
+$("reset").onclick = () => askConfirm("진단표와 모은 조원 기록을 모두 지울까요?", "모두 지우기", "취소", () => {
+  d = {team:d.team, issue:d.issue, sname:d.sname, ssid:d.ssid, members:{}, fields:{}}; save(); fill(); renderPool();
+});
+
+function fill(){
+  $("team").value = d.team || ""; $("issue").value = d.issue || ""; $("sname").value = d.sname || ""; $("ssid").value = d.ssid || "";
+  FIELDS.forEach(([id]) => $(id).value = d.fields[id] || "");
+  renderTag();
+}
+$("team").innerHTML = "<option value=''>조를 고르세요</option>" + TEAMS.map(t => "<option>" + t + "</option>").join("");
+$("issue").innerHTML = "<option value=''>이슈를 고르세요</option>" + BANK.map(c => "<option value='" + c.no + "'>" + esc(issueLabel(c.no)) + "</option>").join("");
+load();
+const pT = PARAMS.get("team"), pI = PARAMS.get("issue");
+if (pT && TEAMS.includes(pT) && !d.team) d.team = pT;
+if (pI && issueOf(pI) && !d.issue) d.issue = pI;
+includeOwn(); save();
+if (IN_FRAME) document.querySelectorAll(".localonly").forEach(el => el.classList.add("hidden"));
+fill(); renderPool();
+</script>
+</body>
+</html>

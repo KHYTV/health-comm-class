@@ -67,6 +67,18 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:6px}
 .empty{color:var(--muted);text-align:center;padding:26px 10px}
 .ask{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--card);border-top:2px solid var(--green);box-shadow:0 -6px 24px rgba(0,0,0,.18);padding:14px max(16px,env(safe-area-inset-left,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-right,0px));display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap}
 .ask p{margin:0;font-weight:500}
+.team{border-top:2px solid var(--gold);padding-top:14px;margin-top:18px;display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px}
+@media (max-width:820px){.team{grid-template-columns:1fr}}
+.diag dl{display:grid;grid-template-columns:150px minmax(0,1fr);gap:4px 12px;margin:6px 0 0;font-size:14px}
+@media (max-width:520px){.diag dl{grid-template-columns:1fr}.diag dd{margin-bottom:6px}}
+.diag dt{color:var(--muted)}
+.diag dd{margin:0;white-space:pre-wrap}
+.diag .quad{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.diag .quad div{background:var(--mint);border-radius:8px;padding:8px 10px;font-size:14px;white-space:pre-wrap}
+.diag .quad div:nth-child(2n){background:var(--beige)}
+.diag .quad b{display:block;font-size:12px;color:var(--head)}
+.diag .role{margin-top:8px;font-weight:700;color:var(--head)}
+.missingdiag{color:var(--warn);font-size:14px}
 .hidden{display:none}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 @media print{.bar,.drop,.filters,#rubricCard,.ask,details summary{display:none!important}.card{border:0}.student{break-inside:avoid}}
@@ -76,7 +88,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:6px}
 <div class="wrap">
   <div class="eyebrow">커뮤니케이션이 할 수 있는 것과 없는 것</div>
   <h1>교수자 콘솔 · 정보 접촉 기록 평가</h1>
-  <p class="lead">학생들이 LMS에 올린 제출 파일(CSV)을 불러와 조별로 모아 보고 채점합니다. 파일과 점수는 이 브라우저 안에만 있고 어디로도 전송되지 않습니다.</p>
+  <p class="lead">학생들이 LMS에 올린 개인 제출 파일과 조 진단표 파일(CSV)을 불러와 조별로 모아 보고 채점합니다. 파일과 점수는 이 브라우저 안에만 있고 어디로도 전송되지 않습니다.</p>
 
   <section class="card">
     <h2>제출 파일 불러오기</h2>
@@ -97,7 +109,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:6px}
 
   <section class="card">
     <h2>조별 요약</h2>
-    <div class="tablewrap"><table><thead><tr><th>조</th><th>이슈</th><th>학생</th><th>기록</th><th>신뢰 O/△/X</th><th>문제 ①/②/③</th><th>채점</th></tr></thead><tbody id="teams"></tbody></table></div>
+    <div class="tablewrap"><table><thead><tr><th>조</th><th>이슈</th><th>학생</th><th>기록</th><th>신뢰 O/△/X</th><th>문제 ①/②/③</th><th>진단표</th><th>채점(개인)</th></tr></thead><tbody id="teams"></tbody></table></div>
     <ul class="warns" id="warns"></ul>
   </section>
 
@@ -105,9 +117,19 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:6px}
     <details>
       <summary style="font-size:15px;color:var(--head);font-weight:700">평가 기준 바꾸기</summary>
       <p class="lead" style="margin-top:8px">항목 이름, 설명, 만점을 고칠 수 있습니다. 바꾸면 이미 넣은 점수는 같은 순서의 항목에 그대로 남습니다.</p>
+      <h3 style="font-size:15px;color:var(--head);margin:10px 0 6px">개인 기록 평가 기준</h3>
       <div class="rubric" id="rubric"></div>
       <div class="bar" style="margin-top:8px"><button class="btn ghost small" id="addCrit">항목 추가</button><button class="btn ghost small" id="resetRubric">기본 기준으로</button></div>
+      <h3 style="font-size:15px;color:var(--head);margin:18px 0 6px">조 진단표 평가 기준</h3>
+      <div class="rubric" id="trubric"></div>
+      <div class="bar" style="margin-top:8px"><button class="btn ghost small" id="addTCrit">항목 추가</button><button class="btn ghost small" id="resetTRubric">기본 기준으로</button></div>
     </details>
+  </section>
+
+  <section class="card">
+    <h2>조별 진단표 평가</h2>
+    <p class="lead" style="margin:0 0 6px">조 서기가 낸 문제 진단표(조 공통 의견)입니다. 조 점수는 그 조원 모두에게 똑같이 들어갑니다. 위의 '학생별 평가'의 조 고르기가 여기에도 적용됩니다.</p>
+    <div id="teamsEval"><p class="empty">조 제출 파일(조진단표)을 불러오면 조별 공통 의견과 조 채점 칸이 여기에 나옵니다.</p></div>
   </section>
 
   <section class="card">
@@ -131,11 +153,20 @@ const DEFAULT_RUBRIC = [
   {name:"판단 이유", desc:"신뢰 판단의 이유가 근거와 맞물리는가", max:5},
   {name:"문제 진단", desc:"①②③ 분류가 커뮤니케이션의 역할과 연결되는가", max:5}
 ];
+const FORM_TEAM = "조진단표 v1";
+const DEFAULT_TEAM_RUBRIC = [
+  {name:"문제 정의", desc:"현상·바람직한 상태·영향받는 사람·문제 수준을 구체적으로 썼는가", max:5},
+  {name:"해결책 균형", desc:"커뮤니케이션·정책·제품·서비스 네 칸을 따져 보았는가", max:5},
+  {name:"커뮤니케이션의 몫", desc:"커뮤니케이션이 할 수 있는 것과 없는 것을 근거와 함께 구분했는가", max:5}
+];
+const DIAG_FIELDS = ["무엇이 일어나고 있나","무엇이 일어나야 하나","누가 영향을 받나","문제의 수준","수준 판단 이유"];
+const QUAD = ["해결책: 커뮤니케이션","해결책: 정책·규제","해결책: 제품","해결책: 서비스"];
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-let db = {rows:[], files:[], rubric:DEFAULT_RUBRIC.map(c => ({...c})), grades:{}};
+let db = {rows:[], files:[], rubric:DEFAULT_RUBRIC.map(c => ({...c})), grades:{}, teamRows:{}, teamRubric:DEFAULT_TEAM_RUBRIC.map(c => ({...c})), teamGrades:{}};
 function save(){ try{ localStorage.setItem("teacherConsole", JSON.stringify(db)); }catch(e){ $("status").innerHTML = "<span class='bad'>브라우저 저장 공간이 막혀 있어, 새로고침하면 불러온 기록과 점수가 사라집니다.</span>"; } }
-function load(){ try{ const v = JSON.parse(localStorage.getItem("teacherConsole")); if (v && Array.isArray(v.rows)) db = Object.assign(db, v); }catch(e){} }
+function load(){ try{ const v = JSON.parse(localStorage.getItem("teacherConsole")); if (v && Array.isArray(v.rows)) db = Object.assign(db, v); }catch(e){}
+  db.teamRows = db.teamRows || {}; db.teamGrades = db.teamGrades || {}; db.teamRubric = db.teamRubric || DEFAULT_TEAM_RUBRIC.map(c => ({...c})); }
 
 function askConfirm(msg, yes, no, onYes){
   document.querySelectorAll(".ask").forEach(x => x.remove());
@@ -175,6 +206,13 @@ function ingest(name, text){
   if (!rows.length) return {name, ok:false, why:"빈 파일"};
   const head = rows[0];
   if (head[0] !== "양식") return {name, ok:false, why:"정보 접촉 기록 제출 파일이 아님"};
+  if (rows[1] && rows[1][0] === FORM_TEAM){
+    const o = {}; head.forEach((h, i) => o[h] = rows[1][i] ?? ""); o._file = name;
+    const prev = db.teamRows[o["조"]];
+    if (prev && (prev["작성 시각"] || "") > (o["작성 시각"] || "")) return {name, ok:false, why:o["조"] + "의 더 최근 진단표가 이미 있음"};
+    db.teamRows[o["조"]] = o;
+    return {name, ok:true, n:1, replaced:!!prev, team:true, who:o["조"]};
+  }
   const idx = k => head.indexOf(k);
   const recs = rows.slice(1).filter(r => r[0] === FORM_ID).map(r => {
     const o = {}; head.forEach((h, i) => o[h] = r[i] ?? ""); o._file = name; return o;
@@ -195,7 +233,8 @@ async function readFiles(list){
   }
   save(); render();
   const ok = results.filter(r => r.ok), bad = results.filter(r => !r.ok);
-  $("status").innerHTML = "파일 " + results.length + "개 중 " + ok.length + "개를 불러왔습니다." +
+  const nt = ok.filter(r => r.team).length;
+  $("status").innerHTML = "파일 " + results.length + "개 중 " + ok.length + "개를 불러왔습니다" + (nt ? " (개인 " + (ok.length - nt) + "개, 조 진단표 " + nt + "개)" : "") + "." +
     (ok.some(r => r.replaced) ? " 다시 낸 학생은 새 파일로 바꿨습니다." : "") +
     (bad.length ? "<br><span class='bad'>불러오지 못한 파일: " + bad.map(r => esc(r.name) + " (" + esc(r.why) + ")").join(", ") + "</span>" : "");
 }
@@ -230,6 +269,11 @@ function warningsFor(s, teamList){
   if (s.entries.some(e => Number(e["근거 수"]) === 0)) w.push("근거 0건");
   return w;
 }
+function allTeams(list){ return [...new Set(Object.keys(teamsOf(list)).concat(Object.keys(db.teamRows)))].sort((a, b) => teamNo(a) - teamNo(b)); }
+function tgradeOf(t){ return db.teamGrades[t] || (db.teamGrades[t] = {scores:[], comment:""}); }
+function tgraded(t){ const g = db.teamGrades[t]; return g && db.teamRubric.every((c, i) => g.scores[i] !== undefined && g.scores[i] !== ""); }
+function ttotal(t){ const g = db.teamGrades[t]; return g ? db.teamRubric.reduce((a, c, i) => a + (Number(g.scores[i]) || 0), 0) : 0; }
+const tmaxTotal = () => db.teamRubric.reduce((a, c) => a + Number(c.max || 0), 0);
 function gradeOf(sid){ return db.grades[sid] || (db.grades[sid] = {scores:[], comment:""}); }
 function graded(sid){ const g = db.grades[sid]; return g && db.rubric.every((c, i) => g.scores[i] !== undefined && g.scores[i] !== ""); }
 function total(sid){ const g = db.grades[sid]; return g ? db.rubric.reduce((a, c, i) => a + (Number(g.scores[i]) || 0), 0) : 0; }
@@ -238,24 +282,56 @@ const maxTotal = () => db.rubric.reduce((a, c) => a + Number(c.max || 0), 0);
 // 그리기
 function render(){
   const list = students(), teams = teamsOf(list);
-  $("teams").innerHTML = Object.keys(teams).sort((a, b) => teamNo(a) - teamNo(b)).map(t => {
-    const ss = teams[t], es = ss.flatMap(s => s.entries);
+  $("teams").innerHTML = allTeams(list).map(t => {
+    const ss = teams[t] || [], es = ss.flatMap(s => s.entries), dg = db.teamRows[t];
     const cnt = (k, v) => es.filter(e => e[k].startsWith(v)).length;
-    const iss = issuesIn(ss);
+    const iss = issuesIn(ss).concat(dg && !issuesIn(ss).includes(dg["이슈"]) ? [dg["이슈"]] : []);
     return "<tr><td><b>" + esc(t) + "</b></td><td>" + iss.map(x => "<span class='pill" + (iss.length > 1 ? " warn" : "") + "'>" + esc(x) + "</span>").join("") +
       "</td><td>" + ss.map(s => esc(s.name) + (s.entries.length < GOAL ? "<span class='pill warn'>" + s.entries.length + "</span>" : "")).join(", ") +
       "</td><td>" + es.length + "</td><td>" + cnt("신뢰","O") + " / " + cnt("신뢰","△") + " / " + cnt("신뢰","X") +
       "</td><td>" + cnt("문제 유형","①") + " / " + cnt("문제 유형","②") + " / " + cnt("문제 유형","③") +
+      "</td><td>" + (dg ? "제출" + (tgraded(t) ? " · " + ttotal(t) + "/" + tmaxTotal() : "") : "<span class='pill warn'>없음</span>") +
       "</td><td>" + ss.filter(s => graded(s.sid)).length + " / " + ss.length + "</td></tr>";
-  }).join("") || "<tr><td colspan='7' class='empty'>불러온 기록이 없습니다.</td></tr>";
+  }).join("") || "<tr><td colspan='8' class='empty'>불러온 기록이 없습니다.</td></tr>";
   const w = [];
   Object.entries(teams).forEach(([t, ss]) => { if (issuesIn(ss).length > 1) w.push(t + ": 조원끼리 이슈가 다릅니다 (" + issuesIn(ss).join(", ") + ")"); });
   list.forEach(s => { if (s.entries.length < GOAL) w.push(s.team + " " + s.name + ": 정보를 " + s.entries.length + "개만 기록했습니다"); });
+  Object.keys(teams).forEach(t => { if (!db.teamRows[t]) w.push(t + ": 조 진단표가 아직 없습니다"); });
+  Object.values(db.teamRows).forEach(dg => {
+    const named = dg["조원"].split(",").map(x => x.trim()).filter(Boolean), sent = (teams[dg["조"]] || []).map(s => s.name);
+    const noFile = named.filter(n => !sent.includes(n)), notIn = sent.filter(n => !named.includes(n));
+    if (noFile.length) w.push(dg["조"] + ": 진단표에는 있지만 개인 파일이 없는 조원 " + noFile.join(", "));
+    if (notIn.length) w.push(dg["조"] + ": 개인 파일은 냈지만 진단표 조원 기록에 빠진 학생 " + notIn.join(", "));
+  });
   $("warns").innerHTML = w.map(x => "<li>" + esc(x) + "</li>").join("");
   const fT = $("fTeam"), prev = fT.value;
-  fT.innerHTML = "<option value=''>모든 조</option>" + Object.keys(teams).sort((a, b) => teamNo(a) - teamNo(b)).map(t => "<option>" + esc(t) + "</option>").join("");
+  fT.innerHTML = "<option value=''>모든 조</option>" + allTeams(list).map(t => "<option>" + esc(t) + "</option>").join("");
   fT.value = [...fT.options].some(o => o.value === prev) ? prev : "";
-  renderRubric(); renderStudents();
+  renderRubric(); renderTeamsEval(); renderStudents();
+}
+function renderTeamsEval(){
+  const fT = $("fTeam").value, ts = Object.keys(db.teamRows).sort((a, b) => teamNo(a) - teamNo(b)).filter(t => !fT || t === fT);
+  if (!Object.keys(db.teamRows).length){ $("teamsEval").innerHTML = "<p class='empty'>조 제출 파일(조진단표)을 불러오면 조별 공통 의견과 조 채점 칸이 여기에 나옵니다.</p>"; return; }
+  $("teamsEval").innerHTML = ts.map(t => {
+    const dg = db.teamRows[t], g = tgradeOf(t);
+    const crit = db.teamRubric.map((c, i) => {
+      const opts = ["<option value=''>-</option>"].concat(Array.from({length: Number(c.max) + 1}, (_, v) => "<option" + (String(g.scores[i]) === String(v) ? " selected" : "") + ">" + v + "</option>")).join("");
+      return "<div class='crit'><label for='tg_" + esc(t) + "_" + i + "'>" + esc(c.name) + "<small>" + esc(c.desc) + "</small></label><select id='tg_" + esc(t) + "_" + i + "' data-team='" + esc(t) + "' data-i='" + i + "'>" + opts + "</select></div>";
+    }).join("");
+    return "<div class='team'><div class='diag'><div class='who'><b>" + esc(t) + "</b><span>" + esc(dg["이슈"]) + " · 서기 " + esc(dg["서기 이름"]) + " · 조원 " + esc(dg["조원"]) + "</span></div>" +
+      "<div class='meta' style='font-size:13px;color:var(--muted)'>조원 기록 " + esc(dg["조원 기록 수"]) + "개 · 신뢰 O/△/X " + esc(dg["신뢰 분포(O/△/X)"]) + " · 문제 ①/②/③ " + esc(dg["문제 분포(①/②/③)"]) + "</div>" +
+      "<dl>" + DIAG_FIELDS.map(k => "<dt>" + esc(k) + "</dt><dd>" + esc(dg[k] || "-") + "</dd>").join("") + "</dl>" +
+      "<div class='quad'>" + QUAD.map(k => "<div><b>" + esc(k.replace("해결책: ", "")) + "</b>" + esc(dg[k] || "-") + "</div>").join("") + "</div>" +
+      "<div class='role'>커뮤니케이션이 맡을 몫: " + esc(dg["커뮤니케이션이 맡을 몫"] || "-") + "</div>" +
+      (dg["조원 기록"] ? "<details><summary>진단표에 모은 조원 기록 보기</summary><div class='ai' style='white-space:pre-wrap'>" + esc(dg["조원 기록"]) + "</div></details>" : "") + "</div>" +
+      "<div class='grade'>" + crit + "<label for='tc_" + esc(t) + "' style='font-size:14px'>조 코멘트</label><textarea id='tc_" + esc(t) + "' data-team='" + esc(t) + "'>" + esc(g.comment) + "</textarea>" +
+      "<div class='total' id='tt_" + esc(t) + "'>조 합계 " + ttotal(t) + " / " + tmaxTotal() + "</div></div></div>";
+  }).join("") || "<p class='empty'>고른 조의 진단표가 없습니다.</p>";
+  document.querySelectorAll("#teamsEval select").forEach(el => el.onchange = () => {
+    const g = tgradeOf(el.dataset.team); g.scores[+el.dataset.i] = el.value === "" ? "" : Number(el.value); save();
+    $("tt_" + el.dataset.team).textContent = "조 합계 " + ttotal(el.dataset.team) + " / " + tmaxTotal(); renderTeamsOnly();
+  });
+  document.querySelectorAll("#teamsEval textarea").forEach(el => el.oninput = () => { tgradeOf(el.dataset.team).comment = el.value; save(); });
 }
 function renderStudents(){
   const list = students(), teams = teamsOf(list);
@@ -283,45 +359,56 @@ function renderStudents(){
       "<div class='grade'>" + crit + "<label for='c_" + esc(s.sid) + "' style='font-size:14px'>코멘트</label><textarea id='c_" + esc(s.sid) + "' data-sid='" + esc(s.sid) + "'>" + esc(g.comment) + "</textarea>" +
       "<div class='total' id='t_" + esc(s.sid) + "'>합계 " + total(s.sid) + " / " + maxTotal() + "</div></div></div>";
   }).join("") || "<p class='empty'>조건에 맞는 학생이 없습니다.</p>";
-  document.querySelectorAll(".grade select").forEach(el => el.onchange = () => {
+  document.querySelectorAll("#students .grade select").forEach(el => el.onchange = () => {
     const g = gradeOf(el.dataset.sid); g.scores[+el.dataset.i] = el.value === "" ? "" : Number(el.value); save();
     $("t_" + el.dataset.sid).textContent = "합계 " + total(el.dataset.sid) + " / " + maxTotal(); renderTeamsOnly();
   });
-  document.querySelectorAll(".grade textarea").forEach(el => el.oninput = () => { gradeOf(el.dataset.sid).comment = el.value; save(); });
+  document.querySelectorAll("#students .grade textarea").forEach(el => el.oninput = () => { gradeOf(el.dataset.sid).comment = el.value; save(); });
 }
 function renderTeamsOnly(){ const y = scrollY; const f = [$("fTeam").value, $("fState").value]; render(); $("fTeam").value = f[0]; $("fState").value = f[1]; renderStudents(); scrollTo(0, y); }
-["fTeam","fState"].forEach(id => $(id).onchange = renderStudents);
+$("fTeam").onchange = () => { renderTeamsEval(); renderStudents(); };
+$("fState").onchange = renderStudents;
 $("fq").oninput = renderStudents;
 
-function renderRubric(){
-  $("rubric").innerHTML = "<b style='font-size:13px'>항목</b><b style='font-size:13px'>설명</b><b style='font-size:13px'>만점</b><span></span>" + db.rubric.map((c, i) =>
+function renderRubric(){ rubricEditor("rubric", db.rubric, db.grades); rubricEditor("trubric", db.teamRubric, db.teamGrades); }
+function rubricEditor(boxId, list, grades){
+  const box = $(boxId);
+  box.innerHTML = "<b style='font-size:13px'>항목</b><b style='font-size:13px'>설명</b><b style='font-size:13px'>만점</b><span></span>" + list.map((c, i) =>
     "<input type='text' aria-label='항목 이름' data-i='" + i + "' data-k='name' value='" + esc(c.name) + "'>" +
     "<input type='text' aria-label='항목 설명' data-i='" + i + "' data-k='desc' value='" + esc(c.desc) + "'>" +
     "<input type='number' aria-label='만점' min='1' max='20' data-i='" + i + "' data-k='max' value='" + esc(c.max) + "'>" +
     "<button class='btn ghost small' data-del='" + i + "'>빼기</button>").join("");
-  $("rubric").querySelectorAll("input").forEach(el => el.onchange = () => {
-    const c = db.rubric[+el.dataset.i]; c[el.dataset.k] = el.dataset.k === "max" ? Math.max(1, Math.min(20, Number(el.value) || 1)) : el.value; save(); render();
+  box.querySelectorAll("input").forEach(el => el.onchange = () => {
+    const c = list[+el.dataset.i]; c[el.dataset.k] = el.dataset.k === "max" ? Math.max(1, Math.min(20, Number(el.value) || 1)) : el.value; save(); render();
   });
-  $("rubric").querySelectorAll("[data-del]").forEach(b => b.onclick = () => {
+  box.querySelectorAll("[data-del]").forEach(b => b.onclick = () => {
     const i = +b.dataset.del;
-    askConfirm("'" + db.rubric[i].name + "' 항목과 그 점수를 뺄까요?", "빼기", "취소", () => { db.rubric.splice(i, 1); Object.values(db.grades).forEach(g => g.scores.splice(i, 1)); save(); render(); });
+    askConfirm("'" + list[i].name + "' 항목과 그 점수를 뺄까요?", "빼기", "취소", () => { list.splice(i, 1); Object.values(grades).forEach(g => g.scores.splice(i, 1)); save(); render(); });
   });
 }
 $("addCrit").onclick = () => { db.rubric.push({name:"새 항목", desc:"", max:5}); save(); render(); };
+$("addTCrit").onclick = () => { db.teamRubric.push({name:"새 항목", desc:"", max:5}); save(); render(); };
+$("resetTRubric").onclick = () => askConfirm("조 진단표 평가 기준을 기본 3개 항목으로 되돌릴까요? 넣은 점수는 순서대로 남습니다.", "되돌리기", "취소", () => { db.teamRubric = DEFAULT_TEAM_RUBRIC.map(c => ({...c})); save(); render(); });
 $("resetRubric").onclick = () => askConfirm("평가 기준을 기본 4개 항목으로 되돌릴까요? 넣은 점수는 순서대로 남습니다.", "되돌리기", "취소", () => { db.rubric = DEFAULT_RUBRIC.map(c => ({...c})); save(); render(); });
 
 // 내보내기
 $("exportGrades").onclick = () => {
-  const list = students(); if (!list.length){ $("status").textContent = "불러온 기록이 없습니다."; return; }
-  download("정보접촉기록_성적.csv", [["조","이름","학번","이슈","기록 수"].concat(db.rubric.map(c => c.name + "(" + c.max + ")"), ["합계(" + maxTotal() + ")","코멘트","확인 필요"])]
-    .concat(list.map(s => { const g = db.grades[s.sid] || {scores:[], comment:""}; return [s.team, s.name, s.sid, s.issue, s.entries.length].concat(db.rubric.map((c, i) => g.scores[i] ?? ""), [total(s.sid), g.comment, warningsFor(s, teamsOf(list)[s.team]).join("; ")]); })));
+  const list = students(); if (!list.length){ $("status").textContent = "불러온 개인 기록이 없습니다."; return; }
+  download("정보접촉기록_성적.csv", [["조","이름","학번","이슈","기록 수"].concat(db.rubric.map(c => "개인 " + c.name + "(" + c.max + ")"), ["개인 합계(" + maxTotal() + ")","개인 코멘트"],
+      db.teamRubric.map(c => "조 " + c.name + "(" + c.max + ")"), ["조 합계(" + tmaxTotal() + ")","조 코멘트","총점(" + (maxTotal() + tmaxTotal()) + ")","확인 필요"])]
+    .concat(list.map(s => {
+      const g = db.grades[s.sid] || {scores:[], comment:""}, tg = db.teamGrades[s.team] || {scores:[], comment:""}, hasDiag = !!db.teamRows[s.team];
+      const w = warningsFor(s, teamsOf(list)[s.team]).concat(hasDiag ? [] : ["조 진단표 없음"]);
+      return [s.team, s.name, s.sid, s.issue, s.entries.length].concat(db.rubric.map((c, i) => g.scores[i] ?? ""), [total(s.sid), g.comment],
+        db.teamRubric.map((c, i) => hasDiag ? (tg.scores[i] ?? "") : ""), [hasDiag ? ttotal(s.team) : "", hasDiag ? tg.comment : "", total(s.sid) + (hasDiag ? ttotal(s.team) : 0), w.join("; ")]);
+    })));
 };
 $("exportAll").onclick = () => {
   if (!db.rows.length){ $("status").textContent = "불러온 기록이 없습니다."; return; }
   const head = Object.keys(db.rows[0]).filter(k => k !== "_file");
   download("정보접촉기록_전체.csv", [head.concat("파일")].concat(db.rows.map(r => head.map(k => r[k]).concat(r._file))));
 };
-$("clear").onclick = () => askConfirm("불러온 제출 기록과 넣은 점수·코멘트를 모두 지울까요? 평가 기준은 남습니다.", "모두 지우기", "취소", () => { db.rows = []; db.grades = {}; save(); render(); $("status").textContent = "지웠습니다."; });
+$("clear").onclick = () => askConfirm("불러온 제출 기록과 넣은 점수·코멘트를 모두 지울까요? 평가 기준은 남습니다.", "모두 지우기", "취소", () => { db.rows = []; db.grades = {}; db.teamRows = {}; db.teamGrades = {}; save(); render(); $("status").textContent = "지웠습니다."; });
 
 // 예시 데이터 (화면 확인용, 실제 학생 아님)
 $("demo").onclick = () => {
@@ -332,8 +419,13 @@ $("demo").onclick = () => {
     mk("2조","예시학생 다","000000003","05 비만치료제",[["인사이트","황수진","2025-04-15","https://www.insight.co.kr/news/499087",6,"개인 사례·체험담 3; 통계·수치 1; 기관 발표 1; 근거 없이 주장만 1","△","체험담 위주다","알고리즘 추천","① 정보가 틀림·과장","전북대 AI"],["데일리팜","이탁순","2025-10-20","https://dailypharm.com/user/news/1181",2,"기관 발표 2","O","식약처 국감 자료","수업","③ 구조 문제","전북대 AI"]]),
     mk("2조","예시학생 라","000000004","06 러닝·근력운동",[["뉴시스","박대로","2024-10-08","https://www.newsis.com/view/NISX20241008_0002912290",3,"기관 발표 2; 실명 전문가 인용 1","O","지자체 사례가 구체적이다","지인 공유","③ 구조 문제","Gemini"],["세계일보","이복진","2026-10-19","https://www.segye.com/newsView/20261018512501",2,"통계·수치 1; 실명 전문가 인용 1","O","심평원 통계","검색","② 행동이 안 바뀜","Gemini"]])
   );
-  db.rows = db.rows.filter(r => r._file !== "예시.csv").concat(ex); save(); render();
-  $("status").textContent = "예시 학생 4명을 불러왔습니다. 이름이 '예시학생'인 기록은 화면 확인용이며, '불러온 기록 지우기'로 지울 수 있습니다.";
+  db.rows = db.rows.filter(r => r._file !== "예시.csv").concat(ex);
+  const dgm = (team, issue, scribe, members, f) => ({"양식":FORM_TEAM,"조":team,"이슈":issue,"서기 이름":scribe,"서기 학번":"000000000","조원":members,"조원 기록 수":f[0],"신뢰 분포(O/△/X)":f[1],"문제 분포(①/②/③)":f[2],
+    "무엇이 일어나고 있나":f[3],"무엇이 일어나야 하나":f[4],"누가 영향을 받나":f[5],"문제의 수준":f[6],"수준 판단 이유":f[7],"해결책: 커뮤니케이션":f[8],"해결책: 정책·규제":f[9],"해결책: 제품":f[10],"해결책: 서비스":f[11],"커뮤니케이션이 맡을 몫":f[12],"작성 시각":"2026-11-04T06:00:00Z","조원 기록":"(예시)", _file:"예시.csv"});
+  db.teamRows["1조"] = dgm("1조","04 수입 식품 불안","예시학생 가","예시학생 가, 예시학생 나",["3","2/1/0","1/1/1","(예시) 검사는 불검출인데 신뢰는 떨어짐","(예시) 검사 정보를 믿고 고를 수 있음","(예시) 학부모, 어민","사회·제도","(예시) 원산지 표시 제도 문제","(예시) 검사 과정 공개 영상","(예시) 원산지 표시 단위 세분화","(예시) 가공품 포장에 산지 표기","(예시) 급식 식재료 공개 앱","(예시) 정보 공개는 할 수 있지만 표시 제도는 못 바꾼다"]);
+  db.teamRows["2조"] = dgm("2조","05 비만치료제","예시학생 다","예시학생 다, 예시학생 라",["4","3/1/0","1/1/2","(예시) 미용 목적 처방 요구 증가","(예시) 필요한 환자만 처방","(예시) 20~30대, 고도비만 환자","여러 수준에 걸침","(예시) 개인 선망과 제도 공백이 겹침","(예시) 인플루언서 채널 맞춤 메시지","(예시) 비대면 처방 제한","","(예시) 처방 전 상담 서비스","(예시) 인식은 바꿀 수 있지만 가격과 유통은 못 바꾼다"]);
+  save(); render();
+  $("status").textContent = "예시 학생 4명과 조 진단표 2개를 불러왔습니다. 이름이 '예시학생'인 기록은 화면 확인용이며, '불러온 기록 지우기'로 지울 수 있습니다.";
 };
 
 // AI 원문 표시 (학생 페이지와 같은 규칙)

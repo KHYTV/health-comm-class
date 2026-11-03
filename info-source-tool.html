@@ -76,6 +76,10 @@ pre.prompt{background:var(--mint);border-radius:8px;padding:14px;white-space:pre
 .copybox{width:100%;min-height:90px;margin-top:10px;font-size:12px}
 .btn:focus-visible,.pick:focus-visible,.slot:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 @media (prefers-reduced-motion: reduce){.flip{transition:none}}
+.sharebox{background:var(--mint);border-radius:10px;padding:14px;margin-top:16px}
+.sharebox h3{margin:0 0 4px;font-size:16px;color:var(--head)}
+.sharebox code{display:block;word-break:break-all;background:var(--field);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12px;margin:8px 0;max-height:96px;overflow:auto;user-select:all}
+.sharebox .links{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
 .hidden{display:none}
 .demo{font-size:13px;color:var(--muted);text-align:right;margin-top:6px}
 .demo button{border:0;background:none;color:var(--gold);text-decoration:underline;cursor:pointer;font:inherit;padding:0 2px}
@@ -205,6 +209,13 @@ details.promptbox summary{cursor:pointer;font-size:14px;color:var(--muted)}
       <span style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost localonly" id="print">인쇄·PDF</button><button class="btn ghost" id="copytsv">기록 복사</button><button class="btn localonly" id="csv">제출 파일 내려받기</button></span>
     </div>
     <p class="hint" id="submithint" style="margin:8px 0 0"></p>
+    <div class="sharebox" id="sharebox">
+      <h3>조 토론용 공유 코드</h3>
+      <p class="hint" style="margin:0">아래 코드를 복사해 조 단톡방에 붙여 넣으세요. 서기가 코드를 모아 조 문제 진단표를 씁니다. 코드에는 조, 이슈, 이름, 내 기록 요약만 들어가고 학번은 들어가지 않습니다.</p>
+      <code id="sharecode"></code>
+      <div class="links"><button class="btn gold" id="copycode">공유 코드 복사</button><a class="btn ghost" id="todiag" href="team-diagnosis.html" style="text-decoration:none">서기라면: 조 문제 진단표 쓰기</a></div>
+      <p class="hint" id="codemsg" style="margin:6px 0 0"></p>
+    </div>
     <textarea id="tsv" class="copybox hidden" readonly aria-label="복사할 기록"></textarea>
     <p class="hint" id="copied" style="margin:6px 0 0"></p>
     <div class="demo"><button type="button" id="reset">이 기기의 기록 지우고 처음부터</button></div>
@@ -389,7 +400,25 @@ function renderLog(){
   $("submithint").textContent = IN_FRAME
     ? "이 화면에서는 파일을 내려받을 수 없습니다. '기록 복사'로 복사해 LMS에 붙여넣으세요."
     : "다 끝나면 '제출 파일 내려받기'로 받은 파일(" + fileName() + ")을 LMS에 올리세요.";
+  renderShare();
 }
+function b64url(str){ const b = new TextEncoder().encode(str); let bin = ""; b.forEach(x => bin += String.fromCharCode(x)); return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
+function shareCode(){
+  const data = {t: st.team, i: st.issue, n: st.name, at: Date.now(),
+    e: st.entries.map(e => [e.media, e.date || "", e.link || "", e.trust, e.kind, e.why, e.nEvidence || 0, Object.entries(e.types || {}).map(([k, v]) => k + " " + v).join("; ")])};
+  return "IC2:" + b64url(JSON.stringify(data));
+}
+function renderShare(){
+  const box = $("sharebox");
+  box.classList.toggle("hidden", !st.entries.length);
+  if (!st.entries.length) return;
+  $("sharecode").textContent = shareCode();
+  $("todiag").href = "team-diagnosis.html?team=" + encodeURIComponent(st.team) + "&issue=" + encodeURIComponent(st.issue);
+}
+$("copycode").onclick = async () => {
+  try { await navigator.clipboard.writeText($("sharecode").textContent); $("codemsg").textContent = "복사했습니다. 조 단톡방에 붙여 넣으세요."; }
+  catch(e){ const r = document.createRange(); r.selectNodeContents($("sharecode")); const sl = getSelection(); sl.removeAllRanges(); sl.addRange(r); $("codemsg").textContent = "자동 복사가 막혀 코드를 선택해 두었습니다. Ctrl+C(휴대폰은 길게 눌러 복사)로 복사하세요."; }
+};
 $("more").onclick = () => show(2);
 $("print").onclick = () => window.print();
 $("reset").onclick = () => askConfirm("이 기기에 저장된 내 기록을 모두 지우고 처음부터 시작할까요?", "지우고 새로 시작", "취소", () => { st = fresh(); save(); ["name","sid"].forEach(id => $(id).value = ""); $("team").value = ""; $("issue").value = ""; show(1); });
