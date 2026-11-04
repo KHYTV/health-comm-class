@@ -79,6 +79,14 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:6px}
 .diag .quad b{display:block;font-size:12px;color:var(--head)}
 .diag .role{margin-top:8px;font-weight:700;color:var(--head)}
 .missingdiag{color:var(--warn);font-size:14px}
+.acts{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+.acts h3{margin:0 0 6px;font-size:15px;color:var(--head)}
+.act{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:6px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.act:last-child{border-bottom:0}
+.btn.danger{background:transparent;color:var(--warn);border:1px solid var(--warn)}
+.who .btn{margin-left:auto}
+.sumtable{min-width:820px}
+.sumtable td:first-child{white-space:nowrap}
 .hidden{display:none}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 @media print{.bar,.drop,.filters,#rubricCard,.ask,details summary{display:none!important}.card{border:0}.student{break-inside:avoid}}
@@ -102,14 +110,15 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:6px}
       <button class="btn ghost" id="demo">예시 데이터로 보기</button>
       <button class="btn ghost" id="exportAll">전체 기록 CSV</button>
       <button class="btn" id="exportGrades">성적 CSV 내려받기</button>
-      <button class="btn ghost" id="clear">불러온 기록 지우기</button>
+      <button class="btn danger" id="clear">모든 기록 지우기</button>
     </div>
     <div class="status" id="status"></div>
+    <div class="acts" id="acts"></div>
   </section>
 
   <section class="card">
     <h2>조별 요약</h2>
-    <div class="tablewrap"><table><thead><tr><th>조</th><th>이슈</th><th>학생</th><th>기록</th><th>신뢰 O/△/X</th><th>문제 ①/②/③</th><th>진단표</th><th>채점(개인)</th></tr></thead><tbody id="teams"></tbody></table></div>
+    <div class="tablewrap"><table class="sumtable"><thead><tr><th>조</th><th>이슈</th><th>학생</th><th>기록</th><th>신뢰 O/△/X</th><th>문제 ①/②/③</th><th>진단표</th><th>채점(개인)</th><th></th></tr></thead><tbody id="teams"></tbody></table></div>
     <ul class="warns" id="warns"></ul>
   </section>
 
@@ -279,6 +288,50 @@ function graded(sid){ const g = db.grades[sid]; return g && db.rubric.every((c, 
 function total(sid){ const g = db.grades[sid]; return g ? db.rubric.reduce((a, c, i) => a + (Number(g.scores[i]) || 0), 0) : 0; }
 const maxTotal = () => db.rubric.reduce((a, c) => a + Number(c.max || 0), 0);
 
+// 활동 날짜와 지우기
+const dayOf = iso => { const t = Date.parse(iso || ""); return isNaN(t) ? "날짜 없음" : new Date(t).toLocaleDateString("sv-SE"); };
+function studentDay(s){ return dayOf(s.entries.map(e => e["기록 시각"]).sort().pop()); }
+function activities(){
+  const a = {};
+  students().forEach(s => { const d = studentDay(s); (a[d] = a[d] || {day:d, students:[], teams:[]}).students.push(s); });
+  Object.values(db.teamRows).forEach(dg => { const d = dayOf(dg["작성 시각"]); (a[d] = a[d] || {day:d, students:[], teams:[]}).teams.push(dg["조"]); });
+  return Object.values(a).sort((x, y) => y.day.localeCompare(x.day));
+}
+function dropStudents(sids){ const set = new Set(sids); db.rows = db.rows.filter(r => !set.has(r["학번"])); sids.forEach(id => delete db.grades[id]); }
+function dropTeamDiag(t){ delete db.teamRows[t]; delete db.teamGrades[t]; }
+const backupNote = " 지운 기록과 점수는 되살릴 수 없으니, 필요하면 먼저 '성적 CSV 내려받기'를 하세요.";
+function deleteActivity(day){
+  const a = activities().find(x => x.day === day); if (!a) return;
+  askConfirm(day + " 활동(학생 " + a.students.length + "명, 조 진단표 " + a.teams.length + "개)을 지울까요?" + backupNote, "이 날짜 활동 지우기", "취소", () => {
+    dropStudents(a.students.map(s => s.sid)); a.teams.forEach(dropTeamDiag); save(); render();
+    $("status").textContent = day + " 활동을 지웠습니다.";
+  });
+}
+function deleteTeam(t){
+  const ss = students().filter(s => s.team === t), hasDiag = !!db.teamRows[t];
+  askConfirm(t + "의 기록(학생 " + ss.length + "명" + (hasDiag ? ", 조 진단표" : "") + ")을 모두 지울까요?" + backupNote, t + " 지우기", "취소", () => {
+    dropStudents(ss.map(s => s.sid)); dropTeamDiag(t); save(); render(); $("status").textContent = t + "의 기록을 지웠습니다.";
+  });
+}
+function deleteStudent(sid){
+  const s = students().find(x => x.sid === sid); if (!s) return;
+  askConfirm(s.team + " " + s.name + "(" + sid + ")의 기록과 점수를 지울까요?" + backupNote, "이 학생 지우기", "취소", () => {
+    dropStudents([sid]); save(); render(); $("status").textContent = s.name + "의 기록을 지웠습니다.";
+  });
+}
+function deleteDiag(t){
+  askConfirm(t + "의 조 진단표와 조 점수를 지울까요? 개인 기록은 남습니다." + backupNote, "진단표 지우기", "취소", () => {
+    dropTeamDiag(t); save(); render(); $("status").textContent = t + "의 조 진단표를 지웠습니다.";
+  });
+}
+function renderActs(){
+  const acts = activities();
+  if (!acts.length){ $("acts").innerHTML = ""; return; }
+  $("acts").innerHTML = "<h3>불러온 활동</h3>" + (acts.length > 1 ? "<p class='status'><span class='bad'>서로 다른 날짜의 활동이 섞여 있습니다. 같은 학번·같은 조 이름은 한 활동으로 합쳐지니, 지난 활동은 지우고 채점하세요.</span></p>" : "") +
+    acts.map(a => "<div class='act'><span><b>" + esc(a.day) + "</b> · 학생 " + a.students.length + "명 · 조 진단표 " + a.teams.length + "개</span><button class='btn danger small' data-day='" + esc(a.day) + "'>이 날짜 활동 지우기</button></div>").join("");
+  $("acts").querySelectorAll("[data-day]").forEach(b => b.onclick = () => deleteActivity(b.dataset.day));
+}
+
 // 그리기
 function render(){
   const list = students(), teams = teamsOf(list);
@@ -291,8 +344,9 @@ function render(){
       "</td><td>" + es.length + "</td><td>" + cnt("신뢰","O") + " / " + cnt("신뢰","△") + " / " + cnt("신뢰","X") +
       "</td><td>" + cnt("문제 유형","①") + " / " + cnt("문제 유형","②") + " / " + cnt("문제 유형","③") +
       "</td><td>" + (dg ? "제출" + (tgraded(t) ? " · " + ttotal(t) + "/" + tmaxTotal() : "") : "<span class='pill warn'>없음</span>") +
-      "</td><td>" + ss.filter(s => graded(s.sid)).length + " / " + ss.length + "</td></tr>";
-  }).join("") || "<tr><td colspan='8' class='empty'>불러온 기록이 없습니다.</td></tr>";
+      "</td><td>" + ss.filter(s => graded(s.sid)).length + " / " + ss.length + "</td><td><button class='btn danger small' data-delteam='" + esc(t) + "'>지우기</button></td></tr>";
+  }).join("") || "<tr><td colspan='9' class='empty'>불러온 기록이 없습니다.</td></tr>";
+  $("teams").querySelectorAll("[data-delteam]").forEach(b => b.onclick = () => deleteTeam(b.dataset.delteam));
   const w = [];
   Object.entries(teams).forEach(([t, ss]) => { if (issuesIn(ss).length > 1) w.push(t + ": 조원끼리 이슈가 다릅니다 (" + issuesIn(ss).join(", ") + ")"); });
   list.forEach(s => { if (s.entries.length < GOAL) w.push(s.team + " " + s.name + ": 정보를 " + s.entries.length + "개만 기록했습니다"); });
@@ -307,7 +361,7 @@ function render(){
   const fT = $("fTeam"), prev = fT.value;
   fT.innerHTML = "<option value=''>모든 조</option>" + allTeams(list).map(t => "<option>" + esc(t) + "</option>").join("");
   fT.value = [...fT.options].some(o => o.value === prev) ? prev : "";
-  renderRubric(); renderTeamsEval(); renderStudents();
+  renderActs(); renderRubric(); renderTeamsEval(); renderStudents();
 }
 function renderTeamsEval(){
   const fT = $("fTeam").value, ts = Object.keys(db.teamRows).sort((a, b) => teamNo(a) - teamNo(b)).filter(t => !fT || t === fT);
@@ -318,7 +372,7 @@ function renderTeamsEval(){
       const opts = ["<option value=''>-</option>"].concat(Array.from({length: Number(c.max) + 1}, (_, v) => "<option" + (String(g.scores[i]) === String(v) ? " selected" : "") + ">" + v + "</option>")).join("");
       return "<div class='crit'><label for='tg_" + esc(t) + "_" + i + "'>" + esc(c.name) + "<small>" + esc(c.desc) + "</small></label><select id='tg_" + esc(t) + "_" + i + "' data-team='" + esc(t) + "' data-i='" + i + "'>" + opts + "</select></div>";
     }).join("");
-    return "<div class='team'><div class='diag'><div class='who'><b>" + esc(t) + "</b><span>" + esc(dg["이슈"]) + " · 서기 " + esc(dg["서기 이름"]) + " · 조원 " + esc(dg["조원"]) + "</span></div>" +
+    return "<div class='team'><div class='diag'><div class='who'><b>" + esc(t) + "</b><span>" + esc(dg["이슈"]) + " · 서기 " + esc(dg["서기 이름"]) + " · 조원 " + esc(dg["조원"]) + " · " + esc(dayOf(dg["작성 시각"])) + "</span><button class='btn danger small' data-deldiag='" + esc(t) + "'>진단표 지우기</button></div>" +
       "<div class='meta' style='font-size:13px;color:var(--muted)'>조원 기록 " + esc(dg["조원 기록 수"]) + "개 · 신뢰 O/△/X " + esc(dg["신뢰 분포(O/△/X)"]) + " · 문제 ①/②/③ " + esc(dg["문제 분포(①/②/③)"]) + "</div>" +
       "<dl>" + DIAG_FIELDS.map(k => "<dt>" + esc(k) + "</dt><dd>" + esc(dg[k] || "-") + "</dd>").join("") + "</dl>" +
       "<div class='quad'>" + QUAD.map(k => "<div><b>" + esc(k.replace("해결책: ", "")) + "</b>" + esc(dg[k] || "-") + "</div>").join("") + "</div>" +
@@ -332,6 +386,7 @@ function renderTeamsEval(){
     $("tt_" + el.dataset.team).textContent = "조 합계 " + ttotal(el.dataset.team) + " / " + tmaxTotal(); renderTeamsOnly();
   });
   document.querySelectorAll("#teamsEval textarea").forEach(el => el.oninput = () => { tgradeOf(el.dataset.team).comment = el.value; save(); });
+  document.querySelectorAll("#teamsEval [data-deldiag]").forEach(b => b.onclick = () => deleteDiag(b.dataset.deldiag));
 }
 function renderStudents(){
   const list = students(), teams = teamsOf(list);
@@ -354,8 +409,8 @@ function renderStudents(){
       const opts = ["<option value=''>-</option>"].concat(Array.from({length: Number(c.max) + 1}, (_, v) => "<option" + (String(g.scores[i]) === String(v) ? " selected" : "") + ">" + v + "</option>")).join("");
       return "<div class='crit'><label for='g_" + esc(s.sid) + "_" + i + "'>" + esc(c.name) + "<small>" + esc(c.desc) + "</small></label><select id='g_" + esc(s.sid) + "_" + i + "' data-sid='" + esc(s.sid) + "' data-i='" + i + "'>" + opts + "</select></div>";
     }).join("");
-    return "<div class='student'><div><div class='who'><b>" + esc(s.name) + "</b><span>" + esc(s.sid) + " · " + esc(s.team) + " · " + esc(s.issue) + "</span>" +
-      warns.map(x => "<span class='pill warn'>" + esc(x) + "</span>").join("") + "</div>" + entries + "</div>" +
+    return "<div class='student'><div><div class='who'><b>" + esc(s.name) + "</b><span>" + esc(s.sid) + " · " + esc(s.team) + " · " + esc(s.issue) + " · " + esc(studentDay(s)) + "</span>" +
+      warns.map(x => "<span class='pill warn'>" + esc(x) + "</span>").join("") + "<button class='btn danger small' data-delsid='" + esc(s.sid) + "'>이 학생 지우기</button></div>" + entries + "</div>" +
       "<div class='grade'>" + crit + "<label for='c_" + esc(s.sid) + "' style='font-size:14px'>코멘트</label><textarea id='c_" + esc(s.sid) + "' data-sid='" + esc(s.sid) + "'>" + esc(g.comment) + "</textarea>" +
       "<div class='total' id='t_" + esc(s.sid) + "'>합계 " + total(s.sid) + " / " + maxTotal() + "</div></div></div>";
   }).join("") || "<p class='empty'>조건에 맞는 학생이 없습니다.</p>";
@@ -363,6 +418,7 @@ function renderStudents(){
     const g = gradeOf(el.dataset.sid); g.scores[+el.dataset.i] = el.value === "" ? "" : Number(el.value); save();
     $("t_" + el.dataset.sid).textContent = "합계 " + total(el.dataset.sid) + " / " + maxTotal(); renderTeamsOnly();
   });
+  document.querySelectorAll("#students [data-delsid]").forEach(b => b.onclick = () => deleteStudent(b.dataset.delsid));
   document.querySelectorAll("#students .grade textarea").forEach(el => el.oninput = () => { gradeOf(el.dataset.sid).comment = el.value; save(); });
 }
 function renderTeamsOnly(){ const y = scrollY; const f = [$("fTeam").value, $("fState").value]; render(); $("fTeam").value = f[0]; $("fState").value = f[1]; renderStudents(); scrollTo(0, y); }
@@ -408,7 +464,7 @@ $("exportAll").onclick = () => {
   const head = Object.keys(db.rows[0]).filter(k => k !== "_file");
   download("정보접촉기록_전체.csv", [head.concat("파일")].concat(db.rows.map(r => head.map(k => r[k]).concat(r._file))));
 };
-$("clear").onclick = () => askConfirm("불러온 제출 기록과 넣은 점수·코멘트를 모두 지울까요? 평가 기준은 남습니다.", "모두 지우기", "취소", () => { db.rows = []; db.grades = {}; db.teamRows = {}; db.teamGrades = {}; save(); render(); $("status").textContent = "지웠습니다."; });
+$("clear").onclick = () => askConfirm("불러온 모든 활동의 제출 기록과 점수·코멘트를 지울까요? 평가 기준은 남습니다." + backupNote, "모두 지우기", "취소", () => { db.rows = []; db.grades = {}; db.teamRows = {}; db.teamGrades = {}; save(); render(); $("status").textContent = "지웠습니다."; });
 
 // 예시 데이터 (화면 확인용, 실제 학생 아님)
 $("demo").onclick = () => {
@@ -425,7 +481,7 @@ $("demo").onclick = () => {
   db.teamRows["1조"] = dgm("1조","04 수입 식품 불안","예시학생 가","예시학생 가, 예시학생 나",["3","2/1/0","1/1/1","(예시) 검사는 불검출인데 신뢰는 떨어짐","(예시) 검사 정보를 믿고 고를 수 있음","(예시) 학부모, 어민","사회·제도","(예시) 원산지 표시 제도 문제","(예시) 검사 과정 공개 영상","(예시) 원산지 표시 단위 세분화","(예시) 가공품 포장에 산지 표기","(예시) 급식 식재료 공개 앱","(예시) 정보 공개는 할 수 있지만 표시 제도는 못 바꾼다"]);
   db.teamRows["2조"] = dgm("2조","05 비만치료제","예시학생 다","예시학생 다, 예시학생 라",["4","3/1/0","1/1/2","(예시) 미용 목적 처방 요구 증가","(예시) 필요한 환자만 처방","(예시) 20~30대, 고도비만 환자","여러 수준에 걸침","(예시) 개인 선망과 제도 공백이 겹침","(예시) 인플루언서 채널 맞춤 메시지","(예시) 비대면 처방 제한","","(예시) 처방 전 상담 서비스","(예시) 인식은 바꿀 수 있지만 가격과 유통은 못 바꾼다"]);
   save(); render();
-  $("status").textContent = "예시 학생 4명과 조 진단표 2개를 불러왔습니다. 이름이 '예시학생'인 기록은 화면 확인용이며, '불러온 기록 지우기'로 지울 수 있습니다.";
+  $("status").textContent = "예시 학생 4명과 조 진단표 2개를 불러왔습니다. 이름이 '예시학생'인 기록은 화면 확인용이며, '이 날짜 활동 지우기'나 '모든 기록 지우기'로 지울 수 있습니다.";
 };
 
 // AI 원문 표시 (학생 페이지와 같은 규칙)
