@@ -162,14 +162,15 @@ const DEFAULT_RUBRIC = [
   {name:"판단 이유", desc:"신뢰 판단의 이유가 근거와 맞물리는가", max:5},
   {name:"문제 진단", desc:"①②③ 분류가 커뮤니케이션의 역할과 연결되는가", max:5}
 ];
-const FORM_TEAM = "조진단표 v1";
+const FORM_TEAM = "조진단표 v2";
+const isTeamForm = v => /^조진단표 v\d+$/.test(v || "");
 const DEFAULT_TEAM_RUBRIC = [
   {name:"문제 정의", desc:"현상·바람직한 상태·영향받는 사람·문제 수준을 구체적으로 썼는가", max:5},
   {name:"해결책 균형", desc:"커뮤니케이션·정책·제품·서비스 네 칸을 따져 보았는가", max:5},
   {name:"커뮤니케이션의 몫", desc:"커뮤니케이션이 할 수 있는 것과 없는 것을 근거와 함께 구분했는가", max:5}
 ];
 const DIAG_FIELDS = ["무엇이 일어나고 있나","무엇이 일어나야 하나","누가 영향을 받나","문제의 수준","수준 판단 이유"];
-const QUAD = ["해결책: 커뮤니케이션","해결책: 정책·규제","해결책: 제품","해결책: 서비스"];
+const QUAD = ["해결책: 커뮤니케이션 / 정책·규제","해결책: 제품 / 서비스","해결책: 커뮤니케이션","해결책: 정책·규제","해결책: 제품","해결책: 서비스"];
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 let db = {rows:[], files:[], rubric:DEFAULT_RUBRIC.map(c => ({...c})), grades:{}, teamRows:{}, teamRubric:DEFAULT_TEAM_RUBRIC.map(c => ({...c})), teamGrades:{}};
@@ -215,7 +216,7 @@ function ingest(name, text){
   if (!rows.length) return {name, ok:false, why:"빈 파일"};
   const head = rows[0];
   if (head[0] !== "양식") return {name, ok:false, why:"정보 접촉 기록 제출 파일이 아님"};
-  if (rows[1] && rows[1][0] === FORM_TEAM){
+  if (rows[1] && isTeamForm(rows[1][0])){
     const o = {}; head.forEach((h, i) => o[h] = rows[1][i] ?? ""); o._file = name;
     const prev = db.teamRows[o["조"]];
     if (prev && (prev["작성 시각"] || "") > (o["작성 시각"] || "")) return {name, ok:false, why:o["조"] + "의 더 최근 진단표가 이미 있음"};
@@ -374,8 +375,8 @@ function renderTeamsEval(){
     }).join("");
     return "<div class='team'><div class='diag'><div class='who'><b>" + esc(t) + "</b><span>" + esc(dg["이슈"]) + " · 서기 " + esc(dg["서기 이름"]) + " · 조원 " + esc(dg["조원"]) + " · " + esc(dayOf(dg["작성 시각"])) + "</span><button class='btn danger small' data-deldiag='" + esc(t) + "'>진단표 지우기</button></div>" +
       "<div class='meta' style='font-size:13px;color:var(--muted)'>조원 기록 " + esc(dg["조원 기록 수"]) + "개 · 신뢰 O/△/X " + esc(dg["신뢰 분포(O/△/X)"]) + " · 문제 ①/②/③ " + esc(dg["문제 분포(①/②/③)"]) + "</div>" +
-      "<dl>" + DIAG_FIELDS.map(k => "<dt>" + esc(k) + "</dt><dd>" + esc(dg[k] || "-") + "</dd>").join("") + "</dl>" +
-      "<div class='quad'>" + QUAD.map(k => "<div><b>" + esc(k.replace("해결책: ", "")) + "</b>" + esc(dg[k] || "-") + "</div>").join("") + "</div>" +
+      "<dl>" + DIAG_FIELDS.filter(k => k in dg).map(k => "<dt>" + esc(k) + "</dt><dd>" + esc(dg[k] || "-") + "</dd>").join("") + "</dl>" +
+      "<div class='quad'>" + QUAD.filter(k => k in dg).map(k => "<div><b>" + esc(k.replace("해결책: ", "")) + "</b>" + esc(dg[k] || "-") + "</div>").join("") + "</div>" +
       "<div class='role'>커뮤니케이션이 맡을 몫: " + esc(dg["커뮤니케이션이 맡을 몫"] || "-") + "</div>" +
       (dg["조원 기록"] ? "<details><summary>진단표에 모은 조원 기록 보기</summary><div class='ai' style='white-space:pre-wrap'>" + esc(dg["조원 기록"]) + "</div></details>" : "") + "</div>" +
       "<div class='grade'>" + crit + "<label for='tc_" + esc(t) + "' style='font-size:14px'>조 코멘트</label><textarea id='tc_" + esc(t) + "' data-team='" + esc(t) + "'>" + esc(g.comment) + "</textarea>" +
@@ -477,7 +478,7 @@ $("demo").onclick = () => {
   );
   db.rows = db.rows.filter(r => r._file !== "예시.csv").concat(ex);
   const dgm = (team, issue, scribe, members, f) => ({"양식":FORM_TEAM,"조":team,"이슈":issue,"서기 이름":scribe,"서기 학번":"000000000","조원":members,"조원 기록 수":f[0],"신뢰 분포(O/△/X)":f[1],"문제 분포(①/②/③)":f[2],
-    "무엇이 일어나고 있나":f[3],"무엇이 일어나야 하나":f[4],"누가 영향을 받나":f[5],"문제의 수준":f[6],"수준 판단 이유":f[7],"해결책: 커뮤니케이션":f[8],"해결책: 정책·규제":f[9],"해결책: 제품":f[10],"해결책: 서비스":f[11],"커뮤니케이션이 맡을 몫":f[12],"작성 시각":"2026-11-04T06:00:00Z","조원 기록":"(예시)", _file:"예시.csv"});
+    "무엇이 일어나고 있나":f[3],"무엇이 일어나야 하나":f[4],"누가 영향을 받나":f[5],"문제의 수준":f[6],"해결책: 커뮤니케이션 / 정책·규제":f[8] + " / " + f[9],"해결책: 제품 / 서비스":f[10] + " / " + f[11],"커뮤니케이션이 맡을 몫":f[12],"작성 시각":"2026-11-04T06:00:00Z","조원 기록":"(예시)", _file:"예시.csv"});
   db.teamRows["1조"] = dgm("1조","04 수입 식품 불안","예시학생 가","예시학생 가, 예시학생 나",["3","2/1/0","1/1/1","(예시) 검사는 불검출인데 신뢰는 떨어짐","(예시) 검사 정보를 믿고 고를 수 있음","(예시) 학부모, 어민","사회·제도","(예시) 원산지 표시 제도 문제","(예시) 검사 과정 공개 영상","(예시) 원산지 표시 단위 세분화","(예시) 가공품 포장에 산지 표기","(예시) 급식 식재료 공개 앱","(예시) 정보 공개는 할 수 있지만 표시 제도는 못 바꾼다"]);
   db.teamRows["2조"] = dgm("2조","05 비만치료제","예시학생 다","예시학생 다, 예시학생 라",["4","3/1/0","1/1/2","(예시) 미용 목적 처방 요구 증가","(예시) 필요한 환자만 처방","(예시) 20~30대, 고도비만 환자","여러 수준에 걸침","(예시) 개인 선망과 제도 공백이 겹침","(예시) 인플루언서 채널 맞춤 메시지","(예시) 비대면 처방 제한","","(예시) 처방 전 상담 서비스","(예시) 인식은 바꿀 수 있지만 가격과 유통은 못 바꾼다"]);
   save(); render();
