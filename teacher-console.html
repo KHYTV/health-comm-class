@@ -179,21 +179,17 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:6px}
 
   <div id="v_w12" class="hidden">
   <section class="card">
-    <h2>조별 요약</h2>
-    <p class="lead" style="margin:0 0 8px">각자 낸 개인 캔버스(N조_이름_학번_기획캔버스.csv)와 서기가 낸 조 캔버스(N조_조캔버스.csv)를 조별로 묶어 봅니다. 조 점수는 그 조 학생 모두에게 똑같이 들어갑니다.</p>
-    <div class="bar" style="margin-bottom:10px"><button class="btn ghost" id="exportPcAll">개인 캔버스 전체 CSV</button><button class="btn ghost" id="exportTcAll">조 캔버스 전체 CSV</button><button class="btn" id="exportW12Grades">11/11 성적 CSV 내려받기</button></div>
-    <div class="tablewrap"><table class="cvsum"><thead><tr><th>조</th><th>문제 카드</th><th>개인 캔버스</th><th>조 캔버스</th><th>조가 고른 이론</th><th>채점(개인)</th><th>조 점수</th><th></th></tr></thead><tbody id="w12sum"></tbody></table></div>
+    <h2>조 캔버스 요약</h2>
+    <p class="lead" style="margin:0 0 8px">서기가 낸 조 캔버스(N조_조캔버스.csv)를 봅니다. 개인 채점은 하지 않고, 조 점수가 캔버스에 적힌 조원 모두에게 똑같이 들어갑니다. 캔버스에는 학번이 없어 성적 CSV는 이름으로 나옵니다.</p>
+    <div class="bar" style="margin-bottom:10px"><button class="btn ghost" id="exportTcAll">조 캔버스 전체 CSV</button><button class="btn" id="exportW12Grades">11/11 성적 CSV 내려받기</button></div>
+    <div class="tablewrap"><table class="cvsum"><thead><tr><th>조</th><th>문제 카드</th><th>서기</th><th>조원</th><th>조가 고른 이론</th><th>제출</th><th>조 점수</th><th></th></tr></thead><tbody id="w12sum"></tbody></table></div>
     <ul class="warns" id="w12warns"></ul>
   </section>
 
   <section class="card">
     <details>
-      <summary style="font-size:15px;color:var(--head);font-weight:700">11/11 평가 기준 바꾸기</summary>
+      <summary style="font-size:15px;color:var(--head);font-weight:700">조 캔버스 평가 기준 바꾸기</summary>
       <p class="lead" style="margin-top:8px">항목 이름, 설명, 만점을 고칠 수 있습니다. 바꾸면 이미 넣은 점수는 같은 순서의 항목에 그대로 남습니다.</p>
-      <h3 style="font-size:15px;color:var(--head);margin:10px 0 6px">개인 캔버스 평가 기준</h3>
-      <div class="rubric" id="pcrubric"></div>
-      <div class="bar" style="margin-top:8px"><button class="btn ghost small" id="addPcCrit">항목 추가</button><button class="btn ghost small" id="resetPcRubric">기본 기준으로</button></div>
-      <h3 style="font-size:15px;color:var(--head);margin:18px 0 6px">조 캔버스 평가 기준</h3>
       <div class="rubric" id="tcrubric"></div>
       <div class="bar" style="margin-top:8px"><button class="btn ghost small" id="addTcCrit">항목 추가</button><button class="btn ghost small" id="resetTcRubric">기본 기준으로</button></div>
     </details>
@@ -203,12 +199,6 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:6px}
     <h2>조 캔버스 평가</h2>
     <div class="filters"><label for="w12team" class="sr">조 고르기</label><select id="w12team"></select><span id="w12count" style="color:var(--muted);font-size:13px"></span></div>
     <div id="tclist"><p class="empty">조 캔버스 파일을 불러오면 조 의견, AI 제안, 최종안과 조 채점 칸이 여기에 나옵니다.</p></div>
-  </section>
-
-  <section class="card">
-    <h2>개인 캔버스 평가</h2>
-    <p class="lead" style="margin:0 0 6px">위의 조 고르기가 여기에도 적용됩니다.</p>
-    <div id="pclist"><p class="empty">개인 캔버스 파일을 불러오면 학생별 캔버스와 채점 칸이 여기에 나옵니다.</p></div>
   </section>
   </div>
 </div>
@@ -231,12 +221,6 @@ const DEFAULT_TEAM_RUBRIC = [
 ];
 const W12 = {"assign": {"1조": 2, "2조": 3, "3조": 1, "4조": 1, "5조": 3, "6조": 2, "7조": 1, "8조": 2, "9조": 3, "10조": 3, "11조": 1, "12조": 2}, "cards": {"1": "운동 부족과 시간 빈곤", "2": "'냉장고 담배' 밈의 확산", "3": "아스파탐 발암 가능성 보도"}};
 const isTeamCanvas = v => /^조캔버스 v\d+$/.test(v || "");
-const isPersonalCanvas = v => /^개인캔버스 v\d+$/.test(v || "");
-const DEFAULT_PC_RUBRIC = [
-  {name:"목표", desc:"누가·무엇을·언제까지·얼마나가 모두 있고 측정 가능하며 현실적인가", max:5},
-  {name:"수용자", desc:"표적 인구에서 좁혔고 인구통계·신념·환경을 구체적으로 썼는가", max:5},
-  {name:"이론 적용", desc:"맡은 이론의 구성요소를 정확한 뜻으로 쓰고 전략과 이었는가", max:5}
-];
 const DEFAULT_TC_RUBRIC = [
   {name:"조 의견 정리", desc:"조원들의 안을 비교해 근거 있게 고르고 토론 기록을 남겼는가", max:5},
   {name:"전략의 차이", desc:"두 이론이 무엇을 바꾸려 하는지의 차이로 전략을 비교했는가", max:5},
@@ -247,12 +231,12 @@ const DIAG_FIELDS = ["무엇이 일어나고 있나","무엇이 일어나야 하
 const QUAD = ["해결책: 커뮤니케이션 / 정책·규제","해결책: 제품 / 서비스","해결책: 커뮤니케이션","해결책: 정책·규제","해결책: 제품","해결책: 서비스"];
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-let db = {rows:[], files:[], rubric:DEFAULT_RUBRIC.map(c => ({...c})), grades:{}, teamRows:{}, teamRubric:DEFAULT_TEAM_RUBRIC.map(c => ({...c})), teamGrades:{}, pcanvas:{}, pcRubric:DEFAULT_PC_RUBRIC.map(c => ({...c})), pcGrades:{}, tcanvas:{}, tcRubric:DEFAULT_TC_RUBRIC.map(c => ({...c})), tcGrades:{}, view:"w11"};
+let db = {rows:[], files:[], rubric:DEFAULT_RUBRIC.map(c => ({...c})), grades:{}, teamRows:{}, teamRubric:DEFAULT_TEAM_RUBRIC.map(c => ({...c})), teamGrades:{}, tcanvas:{}, tcRubric:DEFAULT_TC_RUBRIC.map(c => ({...c})), tcGrades:{}, view:"w11"};
 function save(){ try{ localStorage.setItem("teacherConsole", JSON.stringify(db)); }catch(e){ $("status").innerHTML = "<span class='bad'>브라우저 저장 공간이 막혀 있어, 새로고침하면 불러온 기록과 점수가 사라집니다.</span>"; } }
 function load(){ try{ const v = JSON.parse(localStorage.getItem("teacherConsole")); if (v && Array.isArray(v.rows)) db = Object.assign(db, v); }catch(e){}
   db.teamRows = db.teamRows || {}; db.teamGrades = db.teamGrades || {}; db.teamRubric = db.teamRubric || DEFAULT_TEAM_RUBRIC.map(c => ({...c}));
   delete db.canvas; delete db.canvasGrades; delete db.canvasRubric;
-  db.pcanvas = db.pcanvas || {}; db.pcGrades = db.pcGrades || {}; db.pcRubric = db.pcRubric || DEFAULT_PC_RUBRIC.map(c => ({...c}));
+  delete db.pcanvas; delete db.pcGrades; delete db.pcRubric;
   db.tcanvas = db.tcanvas || {}; db.tcGrades = db.tcGrades || {}; db.tcRubric = db.tcRubric || DEFAULT_TC_RUBRIC.map(c => ({...c})); }
 
 function askConfirm(msg, yes, no, onYes){
@@ -294,14 +278,13 @@ function ingest(name, text){
   const head = rows[0];
   if (head[0] === "항목" && rows[1] && rows[1][0] === "양식"){
     const form = rows[1][1];
-    if (!isTeamCanvas(form) && !isPersonalCanvas(form)) return {name, ok:false, why:"양식이 다름 (" + form + ")"};
+    if (!isTeamCanvas(form)) return {name, ok:false, why: /^개인캔버스/.test(form) ? "개인 캔버스는 채점하지 않음" : "양식이 다름 (" + form + ")"};
     const o = {}; rows.slice(1).forEach(r => o[r[0]] = r[1] ?? ""); o._file = name;
-    const team = isTeamCanvas(form), key = team ? o["조"] : o["학번"], store = team ? db.tcanvas : db.pcanvas;
-    if (!key) return {name, ok:false, why: team ? "조가 적혀 있지 않음" : "학번이 적혀 있지 않음"};
-    const prev = store[key];
-    if (prev && (prev["작성 시각"] || "") > (o["작성 시각"] || "")) return {name, ok:false, why:(team ? key : o["이름"] + "(" + key + ")") + "의 더 최근 캔버스가 이미 있음"};
-    store[key] = o;
-    return {name, ok:true, n:1, replaced:!!prev, canvas:true, who: team ? key : o["이름"]};
+    const t = o["조"], prev = db.tcanvas[t];
+    if (!t) return {name, ok:false, why:"조가 적혀 있지 않음"};
+    if (prev && (prev["작성 시각"] || "") > (o["작성 시각"] || "")) return {name, ok:false, why:t + "의 더 최근 조 캔버스가 이미 있음"};
+    db.tcanvas[t] = o;
+    return {name, ok:true, n:1, replaced:!!prev, canvas:true, who:t};
   }
   if (head[0] !== "양식") return {name, ok:false, why:"수업 제출 파일이 아님"};
   if (rows[1] && isTeamForm(rows[1][0])){
@@ -333,7 +316,7 @@ async function readFiles(list){
   const ok = results.filter(r => r.ok), bad = results.filter(r => !r.ok);
   const nt = ok.filter(r => r.team).length, nc = ok.filter(r => r.canvas).length, ni = ok.length - nt - nc;
   if (nc && !ni && !nt) setView("w12"); else if (ok.length && !nc) setView("w11");
-  $("status").innerHTML = "파일 " + results.length + "개 중 " + ok.length + "개를 불러왔습니다" + (nt || nc ? " (" + [ni ? "개인 " + ni + "개" : "", nt ? "조 진단표 " + nt + "개" : "", nc ? "11/11 캔버스 " + nc + "개" : ""].filter(Boolean).join(", ") + ")" : "") + "." +
+  $("status").innerHTML = "파일 " + results.length + "개 중 " + ok.length + "개를 불러왔습니다" + (nt || nc ? " (" + [ni ? "개인 " + ni + "개" : "", nt ? "조 진단표 " + nt + "개" : "", nc ? "11/11 조 캔버스 " + nc + "개" : ""].filter(Boolean).join(", ") + ")" : "") + "." +
     (ok.some(r => r.replaced) ? " 다시 낸 파일은 새 파일로 바꿨습니다." : "") +
     (bad.length ? "<br><span class='bad'>불러오지 못한 파일: " + bad.map(r => esc(r.name) + " (" + esc(r.why) + ")").join(", ") + "</span>" : "");
 }
@@ -516,7 +499,7 @@ $("fTeam").onchange = () => { renderTeamsEval(); renderStudents(); };
 $("fState").onchange = renderStudents;
 $("fq").oninput = renderStudents;
 
-function renderRubric(){ rubricEditor("rubric", db.rubric, db.grades); rubricEditor("trubric", db.teamRubric, db.teamGrades); rubricEditor("pcrubric", db.pcRubric, db.pcGrades); rubricEditor("tcrubric", db.tcRubric, db.tcGrades); }
+function renderRubric(){ rubricEditor("rubric", db.rubric, db.grades); rubricEditor("trubric", db.teamRubric, db.teamGrades); rubricEditor("tcrubric", db.tcRubric, db.tcGrades); }
 function rubricEditor(boxId, list, grades){
   const box = $(boxId);
   box.innerHTML = "<b style='font-size:13px'>항목</b><b style='font-size:13px'>설명</b><b style='font-size:13px'>만점</b><span></span>" + list.map((c, i) =>
@@ -535,110 +518,68 @@ function rubricEditor(boxId, list, grades){
 $("addCrit").onclick = () => { db.rubric.push({name:"새 항목", desc:"", max:5}); save(); render(); };
 $("addTCrit").onclick = () => { db.teamRubric.push({name:"새 항목", desc:"", max:5}); save(); render(); };
 $("resetTRubric").onclick = () => askConfirm("조 진단표 평가 기준을 기본 3개 항목으로 되돌릴까요? 넣은 점수는 순서대로 남습니다.", "되돌리기", "취소", () => { db.teamRubric = DEFAULT_TEAM_RUBRIC.map(c => ({...c})); save(); render(); });
-$("addPcCrit").onclick = () => { db.pcRubric.push({name:"새 항목", desc:"", max:5}); save(); render(); };
 $("addTcCrit").onclick = () => { db.tcRubric.push({name:"새 항목", desc:"", max:5}); save(); render(); };
-$("resetPcRubric").onclick = () => askConfirm("개인 캔버스 평가 기준을 기본 3개 항목으로 되돌릴까요? 넣은 점수는 순서대로 남습니다.", "되돌리기", "취소", () => { db.pcRubric = DEFAULT_PC_RUBRIC.map(c => ({...c})); save(); render(); });
 $("resetTcRubric").onclick = () => askConfirm("조 캔버스 평가 기준을 기본 4개 항목으로 되돌릴까요? 넣은 점수는 순서대로 남습니다.", "되돌리기", "취소", () => { db.tcRubric = DEFAULT_TC_RUBRIC.map(c => ({...c})); save(); render(); });
 $("resetRubric").onclick = () => askConfirm("평가 기준을 기본 4개 항목으로 되돌릴까요? 넣은 점수는 순서대로 남습니다.", "되돌리기", "취소", () => { db.rubric = DEFAULT_RUBRIC.map(c => ({...c})); save(); render(); });
 
-// 12주차 기획 캔버스 (개인 캔버스 + 조 캔버스)
+// 12주차 기획 캔버스 (조 캔버스만 채점)
 function setView(v){ db.view = v; save(); renderTabs(); }
 function renderTabs(){
   ["w11", "w12"].forEach(v => { $("v_" + v).classList.toggle("hidden", db.view !== v); $("tab_" + v).classList.toggle("on", db.view === v); $("tab_" + v).setAttribute("aria-selected", db.view === v); });
-  const ns = students().length, nd = Object.keys(db.teamRows).length, np = Object.keys(db.pcanvas).length, nt = Object.keys(db.tcanvas).length;
+  const ns = students().length, nd = Object.keys(db.teamRows).length, nt = Object.keys(db.tcanvas).length;
   $("cnt_w11").textContent = ns || nd ? "학생 " + ns + " · 진단표 " + nd : "";
-  $("cnt_w12").textContent = np || nt ? "개인 " + np + " · 조 " + nt : "";
+  $("cnt_w12").textContent = nt ? "조 캔버스 " + nt : "";
 }
 document.querySelectorAll(".tabs [data-view]").forEach(b => b.onclick = () => setView(b.dataset.view));
 const namesIn = s => String(s || "").split(",").map(x => x.trim()).filter(Boolean);
-const rubricOf = kind => kind === "pc" ? db.pcRubric : db.tcRubric;
-const gradesOf = kind => kind === "pc" ? db.pcGrades : db.tcGrades;
-function g12(kind, key){ const G = gradesOf(kind); return G[key] || (G[key] = {scores:[], comment:""}); }
-function g12done(kind, key){ const g = gradesOf(kind)[key]; return !!g && rubricOf(kind).every((c, i) => g.scores[i] !== undefined && g.scores[i] !== ""); }
-function g12total(kind, key){ const g = gradesOf(kind)[key]; return g ? rubricOf(kind).reduce((a, c, i) => a + (Number(g.scores[i]) || 0), 0) : 0; }
-const g12max = kind => rubricOf(kind).reduce((a, c) => a + Number(c.max || 0), 0);
-function w12Teams(){ return [...new Set(Object.values(db.pcanvas).map(o => o["조"]).concat(Object.keys(db.tcanvas)))].sort((a, b) => teamNo(a) - teamNo(b)); }
-const pcsOf = t => Object.values(db.pcanvas).filter(o => o["조"] === t).sort((a, b) => a["이름"].localeCompare(b["이름"], "ko"));
-const cardOk = o => { const q = W12.assign[o["조"]]; return !q || String(o["문제 카드"] || "").startsWith("Q" + q + " "); };
-function pcWarns(o){
-  const w = [];
-  if (!cardOk(o)) w.push("배정 카드(Q" + W12.assign[o["조"]] + ")와 다름");
-  if (!/\d/.test(o["목표: 얼마나"] || "")) w.push("목표 수치에 숫자 없음");
+function tcg(t){ return db.tcGrades[t] || (db.tcGrades[t] = {scores:[], comment:""}); }
+function tcDone(t){ const g = db.tcGrades[t]; return !!g && db.tcRubric.every((c, i) => g.scores[i] !== undefined && g.scores[i] !== ""); }
+function tcTotal(t){ const g = db.tcGrades[t]; return g ? db.tcRubric.reduce((a, c, i) => a + (Number(g.scores[i]) || 0), 0) : 0; }
+const tcMax = () => db.tcRubric.reduce((a, c) => a + Number(c.max || 0), 0);
+const tcTeams = () => Object.keys(db.tcanvas).sort((a, b) => teamNo(a) - teamNo(b));
+function tcWarns(o){
+  const w = [], q = W12.assign[o["조"]];
+  if (q && !String(o["문제 카드"] || "").startsWith("Q" + q + " ")) w.push("배정 카드(Q" + q + ")와 다름");
+  if (Number(o["조원 캔버스 수"] || 0) < 2) w.push("모은 조원 캔버스 " + (o["조원 캔버스 수"] || 0) + "개");
+  if (!String(o["AI 제안 원문"] || "").trim()) w.push("AI 제안 없음");
   return w;
 }
-function teamWarns(t){
-  const w = [], tc = db.tcanvas[t], pcs = pcsOf(t), sent = pcs.map(o => o["이름"]);
-  if (!tc) w.push("조 캔버스가 아직 없습니다");
-  else {
-    const named = namesIn(tc["조원"]);
-    const noFile = named.filter(n => !sent.includes(n)), notIn = sent.filter(n => !named.includes(n));
-    if (noFile.length) w.push("조 캔버스에는 있지만 개인 캔버스를 내지 않은 조원 " + noFile.join(", "));
-    if (notIn.length) w.push("개인 캔버스는 냈지만 조 캔버스 조원에 빠진 학생 " + notIn.join(", "));
-    if (!cardOk(tc)) w.push("조 캔버스가 배정 카드(Q" + W12.assign[t] + ")와 다름");
-    if (Number(tc["조원 캔버스 수"] || 0) < 2) w.push("조 토론판에 모은 조원 캔버스가 " + (tc["조원 캔버스 수"] || 0) + "개");
-    if (!String(tc["AI 제안 원문"] || "").trim()) w.push("AI 제안 없이 낸 조 캔버스");
-  }
-  pcs.filter(o => !cardOk(o)).forEach(o => w.push(o["이름"] + "의 개인 캔버스가 배정 카드와 다름"));
-  return w;
-}
-const gradePill = (kind, key) => g12done(kind, key) ? g12total(kind, key) + " / " + g12max(kind) : "<span class='pill'>안 함</span>";
-function gradeBox(kind, key, label){
-  const g = g12(kind, key), id = kind + "_" + key;
-  const crit = rubricOf(kind).map((c, i) => {
-    const opts = ["<option value=''>-</option>"].concat(Array.from({length: Number(c.max) + 1}, (_, v) => "<option" + (String(g.scores[i]) === String(v) ? " selected" : "") + ">" + v + "</option>")).join("");
-    return "<div class='crit'><label for='" + esc(id) + "_" + i + "'>" + esc(c.name) + "<small>" + esc(c.desc) + "</small></label><select id='" + esc(id) + "_" + i + "' data-kind='" + kind + "' data-key='" + esc(key) + "' data-i='" + i + "'>" + opts + "</select></div>";
-  }).join("");
-  return "<div class='grade'>" + crit + "<label for='" + esc(id) + "_c' style='font-size:14px'>" + label + "</label><textarea id='" + esc(id) + "_c' data-kind='" + kind + "' data-key='" + esc(key) + "'>" + esc(g.comment) + "</textarea>" +
-    "<div class='total' data-total='" + esc(id) + "'>합계 " + g12total(kind, key) + " / " + g12max(kind) + "</div></div>";
-}
-function bindGrades(box){
-  box.querySelectorAll("select[data-kind]").forEach(el => el.onchange = () => {
-    const k = el.dataset.kind, key = el.dataset.key, g = g12(k, key); g.scores[+el.dataset.i] = el.value === "" ? "" : Number(el.value); save();
-    box.querySelector("[data-total='" + CSS.escape(k + "_" + key) + "']").textContent = "합계 " + g12total(k, key) + " / " + g12max(k);
-    renderW12Summary();
-  });
-  box.querySelectorAll("textarea[data-kind]").forEach(el => el.oninput = () => { g12(el.dataset.kind, el.dataset.key).comment = el.value; save(); });
-}
-function deleteW12Team(t){
-  const pcs = pcsOf(t), hasTc = !!db.tcanvas[t];
-  askConfirm(t + "의 11/11 기록(개인 캔버스 " + pcs.length + "개" + (hasTc ? ", 조 캔버스" : "") + ")을 모두 지울까요?" + backupNote, t + " 지우기", "취소", () => {
-    pcs.forEach(o => { delete db.pcanvas[o["학번"]]; delete db.pcGrades[o["학번"]]; }); delete db.tcanvas[t]; delete db.tcGrades[t]; save(); render(); $("status").textContent = t + "의 11/11 기록을 지웠습니다.";
-  });
-}
-function deletePc(sid){
-  const o = db.pcanvas[sid]; if (!o) return;
-  askConfirm(o["조"] + " " + o["이름"] + "(" + sid + ")의 개인 캔버스와 점수를 지울까요?" + backupNote, "이 학생 지우기", "취소", () => { delete db.pcanvas[sid]; delete db.pcGrades[sid]; save(); render(); $("status").textContent = o["이름"] + "의 개인 캔버스를 지웠습니다."; });
-}
+const tcPill = t => tcDone(t) ? tcTotal(t) + " / " + tcMax() : "<span class='pill'>안 함</span>";
 function deleteTc(t){
-  askConfirm(t + "의 조 캔버스와 조 점수를 지울까요? 개인 캔버스는 남습니다." + backupNote, "조 캔버스 지우기", "취소", () => { delete db.tcanvas[t]; delete db.tcGrades[t]; save(); render(); $("status").textContent = t + "의 조 캔버스를 지웠습니다."; });
+  askConfirm(t + "의 조 캔버스와 조 점수를 지울까요?" + backupNote, "조 캔버스 지우기", "취소", () => { delete db.tcanvas[t]; delete db.tcGrades[t]; save(); render(); $("status").textContent = t + "의 조 캔버스를 지웠습니다."; });
 }
 function renderW12Summary(){
-  const ts = w12Teams();
-  $("w12sum").innerHTML = ts.map(t => { const tc = db.tcanvas[t], pcs = pcsOf(t), card = (tc || pcs[0] || {})["문제 카드"] || "";
-    return "<tr><td><b>" + esc(t) + "</b></td><td>" + esc(card) + "</td><td>" + (pcs.map(o => esc(o["이름"]) + " <small style='color:var(--muted)'>" + esc(o["내 이론"]) + "</small>").join(", ") || "<span class='pill warn'>없음</span>") +
-      "</td><td>" + (tc ? "제출" : "<span class='pill warn'>없음</span>") + "</td><td>" + (tc ? esc([tc["이론 1"], tc["이론 2"]].filter(Boolean).join(" · ")) : "") +
-      "</td><td>" + pcs.filter(o => g12done("pc", o["학번"])).length + " / " + pcs.length + "</td><td>" + (tc ? gradePill("tc", t) : "") +
-      "</td><td><button class='btn danger small' data-delw12='" + esc(t) + "'>지우기</button></td></tr>"; }).join("") || "<tr><td colspan='8' class='empty'>불러온 11/11 기록이 없습니다.</td></tr>";
-  $("w12sum").querySelectorAll("[data-delw12]").forEach(b => b.onclick = () => deleteW12Team(b.dataset.delw12));
+  const ts = tcTeams();
+  $("w12sum").innerHTML = ts.map(t => { const o = db.tcanvas[t];
+    return "<tr><td><b>" + esc(t) + "</b></td><td>" + esc(o["문제 카드"]) + "</td><td>" + esc(o["서기"]) + "</td><td>" + esc(o["조원"]) +
+      "</td><td>" + esc([o["이론 1"], o["이론 2"]].filter(Boolean).join(" · ")) + "</td><td>" + esc(dayOf(o["작성 시각"])) + "</td><td>" + tcPill(t) +
+      "</td><td><button class='btn danger small' data-deltc='" + esc(t) + "'>지우기</button></td></tr>"; }).join("") || "<tr><td colspan='8' class='empty'>불러온 조 캔버스가 없습니다.</td></tr>";
+  $("w12sum").querySelectorAll("[data-deltc]").forEach(b => b.onclick = () => deleteTc(b.dataset.deltc));
   const w = [];
-  ts.forEach(t => teamWarns(t).forEach(x => w.push(t + ": " + x)));
-  const maxT = Math.max(0, ...ts.map(teamNo).filter(n => n < 99)), missing = Array.from({length: maxT}, (_, i) => (i + 1) + "조").filter(t => !ts.includes(t));
-  if (missing.length) w.push("아직 아무 파일도 없는 조: " + missing.join(", "));
+  ts.forEach(t => tcWarns(db.tcanvas[t]).forEach(x => w.push(t + ": " + x)));
+  const maxT = Math.max(0, ...ts.map(teamNo).filter(n => n < 99)), missing = Array.from({length: maxT}, (_, i) => (i + 1) + "조").filter(t => !db.tcanvas[t]);
+  if (missing.length) w.push("아직 조 캔버스가 없는 조: " + missing.join(", "));
+  const nameTeams = {}; ts.forEach(t => namesIn(db.tcanvas[t]["조원"]).forEach(n => (nameTeams[n] = nameTeams[n] || []).push(t)));
+  Object.entries(nameTeams).filter(([, v]) => v.length > 1).forEach(([n, v]) => w.push(n + ": 여러 조 캔버스에 이름이 있음 (" + v.join(", ") + ")"));
   $("w12warns").innerHTML = w.map(x => "<li>" + esc(x) + "</li>").join("");
 }
 function dlRows(pairs){ return "<dl>" + pairs.map(([k, v]) => "<dt>" + esc(k) + "</dt><dd>" + esc(v || "-") + "</dd>").join("") + "</dl>"; }
 function renderW12(){
   renderW12Summary();
-  const ts = w12Teams(), sel = $("w12team"), prev = sel.value;
+  const ts = tcTeams(), sel = $("w12team"), prev = sel.value;
   sel.innerHTML = "<option value=''>모든 조</option>" + ts.map(t => "<option>" + esc(t) + "</option>").join("");
   sel.value = ts.includes(prev) ? prev : "";
-  const f = sel.value, show = t => !f || t === f;
-  const tcs = Object.keys(db.tcanvas).sort((a, b) => teamNo(a) - teamNo(b)).filter(show);
-  $("w12count").textContent = ts.length ? "조 캔버스 " + Object.keys(db.tcanvas).length + "개 · 개인 캔버스 " + Object.keys(db.pcanvas).length + "개" : "";
-  $("tclist").innerHTML = !Object.keys(db.tcanvas).length ? "<p class='empty'>조 캔버스 파일을 불러오면 조 의견, AI 제안, 최종안과 조 채점 칸이 여기에 나옵니다.</p>" : tcs.map(t => {
-    const o = db.tcanvas[t];
+  $("w12count").textContent = ts.length ? "조 캔버스 " + ts.length + "개 · 채점 " + ts.filter(tcDone).length + "개" : "";
+  if (!ts.length){ $("tclist").innerHTML = "<p class='empty'>조 캔버스 파일을 불러오면 조 의견, AI 제안, 최종안과 조 채점 칸이 여기에 나옵니다. 먼저 보려면 '예시 데이터로 보기'를 누르세요.</p>"; return; }
+  $("tclist").innerHTML = ts.filter(t => !sel.value || t === sel.value).map(t => {
+    const o = db.tcanvas[t], g = tcg(t);
     const th = k => { const [h, ...rest] = String(o["선택 이론 " + k + (k === 1 ? "과" : "와") + " 분석"] || "").split("\n"); return "<div><b>이론 " + k + " · " + esc(h || "-") + "</b>" + esc(rest.join("\n")) + "</div>"; };
-    return "<div class='team cv'><div><div class='who'><b>" + esc(t) + "</b><span>" + esc(o["문제 카드"]) + " · 서기 " + esc(o["서기"]) + " · 조원 " + esc(o["조원"]) + " · " + esc(dayOf(o["작성 시각"])) + "</span><button class='btn danger small' data-deltc='" + esc(t) + "'>조 캔버스 지우기</button></div>" +
+    const crit = db.tcRubric.map((c, i) => {
+      const opts = ["<option value=''>-</option>"].concat(Array.from({length: Number(c.max) + 1}, (_, v) => "<option" + (String(g.scores[i]) === String(v) ? " selected" : "") + ">" + v + "</option>")).join("");
+      return "<div class='crit'><label for='tcg_" + esc(t) + "_" + i + "'>" + esc(c.name) + "<small>" + esc(c.desc) + "</small></label><select id='tcg_" + esc(t) + "_" + i + "' data-tc='" + esc(t) + "' data-i='" + i + "'>" + opts + "</select></div>";
+    }).join("");
+    return "<div class='team cv'><div><div class='who'><b>" + esc(t) + "</b><span>" + esc(o["문제 카드"]) + " · 서기 " + esc(o["서기"]) + " · 조원 " + esc(o["조원"]) + " · " + esc(dayOf(o["작성 시각"])) + "</span>" +
+      tcWarns(o).map(x => "<span class='pill warn'>" + esc(x) + "</span>").join("") + "<button class='btn danger small' data-deltc='" + esc(t) + "'>조 캔버스 지우기</button></div>" +
       dlRows([["조별 이슈", o["조별 이슈 (조별 논의를 통한 공통 주제)"]], ["커뮤니케이션 목표", o["커뮤니케이션 목표 (누가·무엇을·언제까지·얼마나)"]], ["수용자: 인구통계", o["표적 수용자: 인구통계"]],
         ["수용자: 신념·현재 행동", o["표적 수용자: 신념·현재 행동"]], ["수용자: 사회적·물리적 환경", o["표적 수용자: 사회적·물리적 환경"]]]) +
       "<div class='ths'>" + th(1) + th(2) + "</div>" +
@@ -646,53 +587,34 @@ function renderW12(){
       "<div class='diffbox'><b>토론 기록 (버린 안과 이유)</b>" + esc(o["토론 기록 (버린 안과 이유)"] || "-") + "</div>" +
       "<div class='diffbox final'><b>조 최종안 · " + esc(o["제안 형식"] || "") + "</b>" + esc(o["조 최종안"] || "-") + "</div>" +
       "<div class='diffbox'><b>AI 제안에서 고친 점</b>" + esc(o["AI 제안에서 고친 점"] || "-") + "</div>" +
-      (String(o["AI 제안 원문"] || "").trim() ? "<details><summary>AI 제안 원문 보기" + (o["사용한 AI"] ? " (" + esc(o["사용한 AI"]) + ")" : "") + "</summary><div class='ai'>" + md(o["AI 제안 원문"]) + "</div></details>" : "<p class='missingdiag'>AI 제안 원문이 없습니다.</p>") +
+      (String(o["AI 제안 원문"] || "").trim() ? "<details><summary>AI 제안 원문 보기" + (o["사용한 AI"] ? " (" + esc(o["사용한 AI"]) + ")" : "") + "</summary><div class='ai'>" + md(o["AI 제안 원문"]) + "</div></details>" : "") +
       (o["조원 캔버스"] ? "<details><summary>서기가 모은 조원 캔버스 보기</summary><div class='ai' style='white-space:pre-wrap'>" + esc(o["조원 캔버스"]) + "</div></details>" : "") + "</div>" +
-      gradeBox("tc", t, "조 코멘트") + "</div>";
+      "<div class='grade'>" + crit + "<label for='tcc_" + esc(t) + "' style='font-size:14px'>조 코멘트</label><textarea id='tcc_" + esc(t) + "' data-tc='" + esc(t) + "'>" + esc(g.comment) + "</textarea>" +
+      "<div class='total' data-total='" + esc(t) + "'>합계 " + tcTotal(t) + " / " + tcMax() + "</div></div></div>";
   }).join("") || "<p class='empty'>고른 조의 조 캔버스가 없습니다.</p>";
   $("tclist").querySelectorAll("[data-deltc]").forEach(b => b.onclick = () => deleteTc(b.dataset.deltc));
-  bindGrades($("tclist"));
-  const pcs = Object.values(db.pcanvas).filter(o => show(o["조"])).sort((a, b) => teamNo(a["조"]) - teamNo(b["조"]) || a["이름"].localeCompare(b["이름"], "ko"));
-  $("pclist").innerHTML = !Object.keys(db.pcanvas).length ? "<p class='empty'>개인 캔버스 파일을 불러오면 학생별 캔버스와 채점 칸이 여기에 나옵니다.</p>" : pcs.map(o => {
-    const sid = o["학번"], parts = ["누가", "무엇을", "언제까지", "얼마나"].map(k => k + ": " + (o["목표: " + k] || "-")).join(" · ");
-    const ths = Object.keys(o).filter(k => /^내 이론 \d+과 분석$/.test(k)).map(k => "<div><b>" + esc(String(o[k]).split("\n")[0]) + "</b>" + esc(String(o[k]).split("\n").slice(1).join("\n")) + "</div>").join("");
-    return "<div class='student cv'><div><div class='who'><b>" + esc(o["이름"]) + "</b><span>" + esc(sid) + " · " + esc(o["조"]) + " · " + esc(o["문제 카드"]) + " · " + esc(dayOf(o["작성 시각"])) + "</span>" +
-      pcWarns(o).map(x => "<span class='pill warn'>" + esc(x) + "</span>").join("") + "<button class='btn danger small' data-delpc='" + esc(sid) + "'>이 학생 지우기</button></div>" +
-      "<dl><dt>조별 이슈</dt><dd>" + esc(o["조별 이슈"] || "-") + "</dd><dt>커뮤니케이션 목표</dt><dd>" + esc(o["커뮤니케이션 목표"] || "-") + "<span class='parts'>" + esc(parts) + "</span>" +
-        (o["목표 점검"] ? "<span class='parts'>스스로 점검: " + esc(o["목표 점검"]) + "</span>" : "") + "</dd>" +
-        "<dt>수용자: 인구통계</dt><dd>" + esc(o["표적 수용자: 인구통계"] || "-") + "</dd><dt>수용자: 신념·현재 행동</dt><dd>" + esc(o["표적 수용자: 신념·현재 행동"] || "-") + "</dd>" +
-        "<dt>수용자: 사회적·물리적 환경</dt><dd>" + esc(o["표적 수용자: 사회적·물리적 환경"] || "-") + "</dd></dl>" +
-      "<div class='ths'>" + ths + "</div></div>" + gradeBox("pc", sid, "코멘트") + "</div>";
-  }).join("") || "<p class='empty'>고른 조의 개인 캔버스가 없습니다.</p>";
-  $("pclist").querySelectorAll("[data-delpc]").forEach(b => b.onclick = () => deletePc(b.dataset.delpc));
-  bindGrades($("pclist"));
+  $("tclist").querySelectorAll("select[data-tc]").forEach(el => el.onchange = () => {
+    const t = el.dataset.tc; tcg(t).scores[+el.dataset.i] = el.value === "" ? "" : Number(el.value); save();
+    $("tclist").querySelector("[data-total='" + CSS.escape(t) + "']").textContent = "합계 " + tcTotal(t) + " / " + tcMax();
+    renderW12Summary(); $("w12count").textContent = "조 캔버스 " + tcTeams().length + "개 · 채점 " + tcTeams().filter(tcDone).length + "개";
+  });
+  $("tclist").querySelectorAll("textarea[data-tc]").forEach(el => el.oninput = () => { tcg(el.dataset.tc).comment = el.value; save(); });
 }
 $("w12team").onchange = renderW12;
 $("exportW12Grades").onclick = () => {
-  const ts = w12Teams();
-  if (!ts.length){ $("status").textContent = "불러온 11/11 기록이 없습니다."; return; }
-  const P = db.pcRubric, T = db.tcRubric;
-  const rows = [["조","이름","학번","문제 카드","맡은 이론"].concat(P.map(c => "개인 " + c.name + "(" + c.max + ")"), ["개인 합계(" + g12max("pc") + ")","개인 코멘트"],
-    T.map(c => "조 " + c.name + "(" + c.max + ")"), ["조 합계(" + g12max("tc") + ")","조 코멘트","총점(" + (g12max("pc") + g12max("tc")) + ")","확인 필요"])];
-  ts.forEach(t => {
-    const tc = db.tcanvas[t], tg = db.tcGrades[t] || {scores:[], comment:""};
-    const teamPart = () => T.map((c, i) => tc ? (tg.scores[i] ?? "") : "").concat([tc ? g12total("tc", t) : "", tc ? tg.comment : ""]);
-    const teamW = (tc ? [] : ["조 캔버스 없음"]).concat(tc && !g12done("tc", t) ? ["조 채점 안 함"] : []);
-    pcsOf(t).forEach(o => { const sid = o["학번"], g = db.pcGrades[sid] || {scores:[], comment:""};
-      rows.push([t, o["이름"], sid, o["문제 카드"], o["내 이론"]].concat(P.map((c, i) => g.scores[i] ?? ""), [g12total("pc", sid), g.comment], teamPart(),
-        [g12total("pc", sid) + (tc ? g12total("tc", t) : 0), pcWarns(o).concat(g12done("pc", sid) ? [] : ["개인 채점 안 함"], teamW).join("; ")])); });
-    if (tc) namesIn(tc["조원"]).filter(n => !pcsOf(t).some(o => o["이름"] === n)).forEach(n =>
-      rows.push([t, n, "", tc["문제 카드"], ""].concat(P.map(() => ""), ["", ""], teamPart(), [g12total("tc", t), ["개인 캔버스 없음"].concat(teamW).join("; ")])));
-  });
+  const ts = tcTeams();
+  if (!ts.length){ $("status").textContent = "불러온 조 캔버스가 없습니다."; return; }
+  const rows = [["조","이름","문제 카드"].concat(db.tcRubric.map(c => c.name + "(" + c.max + ")"), ["합계(" + tcMax() + ")","조 코멘트","확인 필요"])];
+  ts.forEach(t => { const o = db.tcanvas[t], g = db.tcGrades[t] || {scores:[], comment:""}, w = tcWarns(o).concat(tcDone(t) ? [] : ["채점 안 함"]).join("; ");
+    (namesIn(o["조원"]).length ? namesIn(o["조원"]) : [""]).forEach(n => rows.push([t, n, o["문제 카드"]].concat(db.tcRubric.map((c, i) => g.scores[i] ?? ""), [tcTotal(t), g.comment, w]))); });
   download("기획캔버스_성적.csv", rows);
 };
-function exportObjs(name, objs){
-  if (!objs.length){ $("status").textContent = "내보낼 기록이 없습니다."; return; }
-  const head = [...new Set(objs.flatMap(o => Object.keys(o)))].filter(k => k !== "_file");
-  download(name, [head.concat("파일")].concat(objs.map(o => head.map(k => o[k] ?? "").concat(o._file))));
-}
-$("exportPcAll").onclick = () => exportObjs("개인캔버스_전체.csv", Object.values(db.pcanvas).sort((a, b) => teamNo(a["조"]) - teamNo(b["조"])));
-$("exportTcAll").onclick = () => exportObjs("조캔버스_전체.csv", Object.keys(db.tcanvas).sort((a, b) => teamNo(a) - teamNo(b)).map(t => db.tcanvas[t]));
+$("exportTcAll").onclick = () => {
+  const ts = tcTeams();
+  if (!ts.length){ $("status").textContent = "불러온 조 캔버스가 없습니다."; return; }
+  const head = [...new Set(ts.flatMap(t => Object.keys(db.tcanvas[t])))].filter(k => k !== "_file");
+  download("조캔버스_전체.csv", [head.concat("파일")].concat(ts.map(t => head.map(k => db.tcanvas[t][k] ?? "").concat(db.tcanvas[t]._file))));
+};
 
 // 내보내기
 $("exportGrades").onclick = () => {
@@ -711,7 +633,7 @@ $("exportAll").onclick = () => {
   const head = Object.keys(db.rows[0]).filter(k => k !== "_file");
   download("정보접촉기록_전체.csv", [head.concat("파일")].concat(db.rows.map(r => head.map(k => r[k]).concat(r._file))));
 };
-$("clear").onclick = () => askConfirm("불러온 모든 활동의 제출 기록과 점수·코멘트를 지울까요? 평가 기준은 남습니다." + backupNote, "모두 지우기", "취소", () => { db.rows = []; db.grades = {}; db.teamRows = {}; db.teamGrades = {}; db.pcanvas = {}; db.pcGrades = {}; db.tcanvas = {}; db.tcGrades = {}; save(); render(); $("status").textContent = "지웠습니다."; });
+$("clear").onclick = () => askConfirm("불러온 모든 활동의 제출 기록과 점수·코멘트를 지울까요? 평가 기준은 남습니다." + backupNote, "모두 지우기", "취소", () => { db.rows = []; db.grades = {}; db.teamRows = {}; db.teamGrades = {}; db.tcanvas = {}; db.tcGrades = {}; save(); render(); $("status").textContent = "지웠습니다."; });
 
 // 예시 데이터 (화면 확인용, 실제 학생 아님)
 $("demo").onclick = () => {
@@ -727,25 +649,19 @@ $("demo").onclick = () => {
     "무엇이 일어나고 있나":f[3],"무엇이 일어나야 하나":f[4],"누가 영향을 받나":f[5],"문제의 수준":f[6],"해결책: 커뮤니케이션 / 정책·규제":f[8] + " / " + f[9],"해결책: 제품 / 서비스":f[10] + " / " + f[11],"커뮤니케이션이 맡을 몫":f[12],"작성 시각":"2026-11-04T06:00:00Z","조원 기록":"(예시)", _file:"예시.csv"});
   if (!db.teamRows["1조"] || db.teamRows["1조"]._file === "예시.csv") db.teamRows["1조"] = dgm("1조","04 수입 식품 불안","예시학생 가","예시학생 가, 예시학생 나",["3","2/1/0","1/1/1","(예시) 검사는 불검출인데 신뢰는 떨어짐","(예시) 검사 정보를 믿고 고를 수 있음","(예시) 학부모, 어민","사회·제도","(예시) 원산지 표시 제도 문제","(예시) 검사 과정 공개 영상","(예시) 원산지 표시 단위 세분화","(예시) 가공품 포장에 산지 표기","(예시) 급식 식재료 공개 앱","(예시) 정보 공개는 할 수 있지만 표시 제도는 못 바꾼다"]);
   if (!db.teamRows["2조"] || db.teamRows["2조"]._file === "예시.csv") db.teamRows["2조"] = dgm("2조","05 비만치료제","예시학생 다","예시학생 다, 예시학생 라",["4","3/1/0","1/1/2","(예시) 미용 목적 처방 요구 증가","(예시) 필요한 환자만 처방","(예시) 20~30대, 고도비만 환자","여러 수준에 걸침","(예시) 개인 선망과 제도 공백이 겹침","(예시) 인플루언서 채널 맞춤 메시지","(예시) 비대면 처방 제한","","(예시) 처방 전 상담 서비스","(예시) 인식은 바꿀 수 있지만 가격과 유통은 못 바꾼다"]);
-  // 실제로 낸 11/11 파일이 있는 조에는 예시를 섞지 않는다
-  const realW12 = new Set(Object.values(db.pcanvas).concat(Object.values(db.tcanvas)).filter(o => o._file !== "예시.csv").map(o => o["조"]));
-  const q3 = W12.assign["3조"] || 1, card3 = "Q" + q3 + " " + W12.cards[q3], q1 = W12.assign["1조"] || 1, card1 = "Q" + q1 + " " + W12.cards[q1];
-  const pcm = (team, card, name, sid, th, much) => ({"양식":"개인캔버스 v1","조":team,"문제 카드":card,"이름":name,"학번":sid,"조별 이슈":"(예시) " + name + "가 본 조별 이슈",
-    "커뮤니케이션 목표":"(예시) 12월 말까지 통학 1학년의 " + much + "가 주 2회 운동한다.","표적 수용자: 인구통계":"(예시) 19~20세 통학생","표적 수용자: 신념·현재 행동":"(예시) 운동은 좋다고 알지만 미룸",
-    "표적 수용자: 사회적·물리적 환경":"(예시) 통학 버스, 숏폼","내 이론 1과 분석":th + " (예시)\n구성요소: (예시) 분석\n→ 전략: (예시) " + th + " 전략","목표: 누가":"(예시) 통학 1학년","목표: 무엇을":"(예시) 주 2회 운동한다",
-    "목표: 언제까지":"12월 말까지","목표: 얼마나":much,"목표 점검":"","내 이론":th,"작성 시각":"2026-11-11T05:30:00Z", _file:"예시.csv"});
-  [["3조", card3, "예시학생 마", "000000005", "HBM", "20%"], ["3조", card3, "예시학생 바", "000000006", "SCT", "15%"], ["3조", card3, "예시학생 사", "000000007", "TPB", "많이"], ["1조", card1, "예시학생 아", "000000008", "DOI", "30%"]]
-    .filter(a => !realW12.has(a[0])).forEach(a => db.pcanvas[a[3]] = pcm(...a));
-  if (!realW12.has("3조")) db.tcanvas["3조"] = {"양식":"조캔버스 v1","조":"3조","문제 카드":card3,"서기":"예시학생 바","조원":"예시학생 바, 예시학생 마, 예시학생 사","조원 캔버스 수":"3",
+  // 실제로 낸 조 캔버스가 있는 조에는 예시를 넣지 않는다
+  const tcm = (team, scribe, members, n, ai, final) => { const q = W12.assign[team] || 1; return {"양식":"조캔버스 v1","조":team,"문제 카드":"Q" + q + " " + W12.cards[q],"서기":scribe,"조원":members,"조원 캔버스 수":String(n),
     "조별 이슈 (조별 논의를 통한 공통 주제)":"(예시) 통학 시간이 긴 1학년이 '시간이 없다'며 근력운동을 시작하지 않는다","커뮤니케이션 목표 (누가·무엇을·언제까지·얼마나)":"(예시) 2026년 12월 말까지 통학 왕복 2시간 이상인 1학년의 20%가 주 2회 10분 맨몸 근력운동을 한다.",
     "표적 수용자: 인구통계":"(예시) 19~20세 통학생","표적 수용자: 신념·현재 행동":"(예시) 운동은 좋다고 알지만 미룸","표적 수용자: 사회적·물리적 환경":"(예시) 통학 버스, 숏폼",
     "선택 이론 1과 분석":"HBM 건강신념모델\n지각된 장벽: (예시) 시간 부족\n→ 전략: (예시) 10분 루틴","선택 이론 2와 분석":"SCT 사회인지이론\n관찰학습: (예시) 모델 없음\n→ 전략: (예시) 선배 숏폼",
     "두 이론이 가리키는 전략의 차이":"(예시) HBM은 개인이 느끼는 장벽을, SCT는 모델과 환경을 바꾼다.","토론 기록 (버린 안과 이유)":"(예시) TPB 안은 규범 근거가 약해 뺐다",
-    "조 최종안":"(예시) '통학 10분 루틴' 캠페인: 버스 정류장 QR, 선배 숏폼 3편, 2주 출석 체크","AI 제안에서 고친 점":"(예시) 확인 필요 통계는 빼고 활동 2를 통학 시간에 맞췄다",
-    "제안 형식":"건강 캠페인","사용한 AI":"전북대 AI","AI 제안 원문":"### 1. 캠페인 개요\n| 항목 | 내용 |\n|---|---|\n| 캠페인 이름 | (예시) 통학 10분 루틴 |\n\n### 2. 실행 활동 3개\n- (예시) 정류장 QR [HBM: 행동 계기]",
-    "이론 1":"HBM","이론 2":"SCT","작성 시각":"2026-11-11T06:10:00Z","조원 캔버스":"(예시)", _file:"예시.csv"};
+    "조 최종안":final,"AI 제안에서 고친 점":ai ? "(예시) 확인 필요 통계는 빼고 활동 2를 통학 시간에 맞췄다" : "","제안 형식":"건강 캠페인","사용한 AI":ai ? "전북대 AI" : "","AI 제안 원문":ai,
+    "이론 1":"HBM","이론 2":"SCT","작성 시각":"2026-11-11T06:10:00Z","조원 캔버스":"(예시)", _file:"예시.csv"}; };
+  if (!db.tcanvas["3조"] || db.tcanvas["3조"]._file === "예시.csv") db.tcanvas["3조"] = tcm("3조", "예시학생 바", "예시학생 바, 예시학생 마, 예시학생 사", 3,
+    "### 1. 캠페인 개요\n| 항목 | 내용 |\n|---|---|\n| 캠페인 이름 | (예시) 통학 10분 루틴 |\n\n### 2. 실행 활동 3개\n- (예시) 정류장 QR [HBM: 행동 계기]", "(예시) '통학 10분 루틴' 캠페인: 버스 정류장 QR, 선배 숏폼 3편, 2주 출석 체크");
+  if (!db.tcanvas["1조"] || db.tcanvas["1조"]._file === "예시.csv") db.tcanvas["1조"] = tcm("1조", "예시학생 아", "예시학생 아", 1, "", "(예시) AI 없이 조가 직접 쓴 최종안");
   save(); render();
-  $("status").textContent = "11/4 예시(학생 4명, 조 진단표 2개)와 11/11 예시(개인 캔버스 4개, 조 캔버스 1개)를 불러왔습니다. 이름이 '예시학생'인 기록은 화면 확인용이며, '이 날짜 활동 지우기'나 '모든 기록 지우기'로 지울 수 있습니다.";
+  $("status").textContent = "11/4 예시(학생 4명, 조 진단표 2개)와 11/11 예시(조 캔버스 2개)를 불러왔습니다. 이름이 '예시학생'인 기록은 화면 확인용이며, '이 날짜 활동 지우기'나 '모든 기록 지우기'로 지울 수 있습니다.";
 };
 
 // AI 원문 표시 (학생 페이지와 같은 규칙)
