@@ -47,6 +47,7 @@ select{padding:10px 12px;border:1px solid var(--head);border-radius:8px;font:inh
 .case header h2{margin:0;color:var(--head);font-size:22px}
 .golink{display:flex;align-items:center;gap:10px;justify-content:space-between;background:var(--beige);border-radius:8px;padding:12px 14px;margin-bottom:16px;flex-wrap:wrap}
 .golink span{font-size:14px;flex:1;min-width:220px}
+.golink .golinks{display:flex;gap:8px;flex-wrap:wrap;flex:0 1 auto;min-width:0}
 .task{background:var(--mint);border-radius:8px;padding:12px 14px;font-size:15px;margin-bottom:16px}
 .task b{display:block;font-size:13px;color:var(--gold);margin-bottom:2px}
 .field{margin-bottom:14px}
@@ -81,11 +82,11 @@ details summary{cursor:pointer;font-weight:700;color:var(--head)}
   <p class="lead">우리 조를 고르고 카드를 눌러 뽑으세요. 같은 조는 누가, 어느 기기에서 뽑아도 같은 카드가 나옵니다. 조원 모두 자기 휴대폰으로 열어 같은 카드를 보며 토론하세요.</p>
 
   <div class="flow" aria-label="오늘의 순서">
-    <div><b>1 안내</b><span>5분 · 지난 활동 떠올리기</span></div>
-    <div><b>2 목표</b><span>7분 · 누가·무엇을·언제까지·얼마나</span></div>
-    <div><b>3 수용자</b><span>7분 · 인구통계·신념·환경</span></div>
-    <div><b>4 이론</b><span>15분 · 다섯 중 두 개</span></div>
-    <div><b>5 정리</b><span>10분 · 캔버스 LMS 업로드</span></div>
+    <div><b>1 카드</b><span>조원 모두 같은 카드 · 맡을 이론 나누기</span></div>
+    <div><b>2 내 캔버스</b><span>각자 · 목표·수용자·내 이론</span></div>
+    <div><b>3 제출·공유</b><span>각자 · LMS 제출, 코드를 단톡방에</span></div>
+    <div><b>4 조 토론</b><span>서기 · 코드 모아 조 의견 정하기</span></div>
+    <div><b>5 AI 제안</b><span>서기 · 조원과 공유, 최종안 LMS 제출</span></div>
   </div>
 
   <div class="pickrow">
@@ -140,8 +141,9 @@ function renderDetail(t){
   const li = a => a.map(x => "<li>" + esc(x) + "</li>").join("");
   $("detail").innerHTML = `<article class="case">
     <header><span class="no">Q${q.no}</span><h2>${esc(q.name)}</h2></header>
-    <div class="golink"><span><b>${esc(t)}</b>의 문제 카드입니다. 서기 한 명이 기획 캔버스를 쓰고, 조원은 이 화면을 보며 함께 토론하세요.</span>
-      <a class="btn" href="planning-canvas.html?team=${encodeURIComponent(t)}">서기: 기획 캔버스 쓰기</a></div>
+    <div class="golink"><span><b>${esc(t)}</b>의 문제 카드입니다. 조원은 각자 내 캔버스를 쓰고 공유 코드를 단톡방에 올립니다. 서기는 코드를 모아 조 토론판에서 정리합니다. 이론은 조원끼리 서로 다르게 나눠 맡으세요.</span>
+      <span class="golinks"><a class="btn" href="planning-canvas.html?team=${encodeURIComponent(t)}">각자: 내 캔버스 쓰기</a>
+      <a class="btn ghost" href="team-canvas.html?team=${encodeURIComponent(t)}">서기: 조 토론판</a></span></div>
     <div class="task"><b>과제</b>${esc(q.task)}</div>
     <div class="field"><h4>언제 · 어디서</h4><p>${esc(q.when)}</p></div>
     <div class="field"><h4>무슨 일이 있었나</h4><ul>${li(q.facts)}</ul></div>
