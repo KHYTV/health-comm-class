@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>12주차 문제 카드</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--green:#1f5145;--green2:#2e6b5c;--head:#1f5145;--gold:#b5781f;--gold2:#e9b45a;--mint:#e6efec;--beige:#f3e6cf;--ink:#1d2b27;--muted:#5d6f69;--line:#d5e0dc;--bg:#fbfaf6;--card:#ffffff;--field:#ffffff;--zebra:#f5f8f7;--on:#ffffff}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--green:#2f7a66;--green2:#7cc4ad;--head:#9fd8c5;--gold:#e0a54e;--gold2:#f0c274;--mint:#1f2e2a;--beige:#3a3123;--ink:#e3ece8;--muted:#9fb3ac;--line:#2f403b;--bg:#111816;--card:#18221f;--field:#1d2925;--zebra:#1b2623;--on:#ffffff;color-scheme:dark}}
+:root[data-theme="dark"]{--green:#2f7a66;--green2:#7cc4ad;--head:#9fd8c5;--gold:#e0a54e;--gold2:#f0c274;--mint:#1f2e2a;--beige:#3a3123;--ink:#e3ece8;--muted:#9fb3ac;--line:#2f403b;--bg:#111816;--card:#18221f;--field:#1d2925;--zebra:#1b2623;--on:#ffffff;color-scheme:dark}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans KR",system-ui,sans-serif;font-size:16px;line-height:1.55}
+.wrap{max-width:880px;margin:0 auto;padding:28px 16px 64px}
+.eyebrow{color:var(--gold);font-weight:700;font-size:13px}
+h1{color:var(--head);font-size:28px;margin:4px 0 6px}
+.lead{color:var(--muted);margin:0 0 16px;font-size:15px}
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:0 0 20px}
+.flow div{background:var(--mint);border-radius:8px;padding:8px 10px;font-size:13px;min-width:0}
+.flow b{display:block;color:var(--head);font-size:14px}
+.flow span{color:var(--muted);font-size:12px}
+@media (max-width:640px){.flow{grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}.flow div{padding:6px;font-size:11px}.flow b{font-size:12px}.flow span{display:none}}
+.btn{border:0;border-radius:8px;padding:10px 16px;font:inherit;font-weight:700;cursor:pointer;background:var(--green);color:var(--on);text-decoration:none;display:inline-block}
+.btn.ghost{background:transparent;color:var(--head);border:1px solid var(--head)}
+select{padding:10px 12px;border:1px solid var(--head);border-radius:8px;font:inherit;font-weight:700;background:var(--card);color:var(--head);min-width:200px}
+.pickrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.pickrow small{color:var(--muted);font-size:13px}
+.stage{display:flex;justify-content:center;margin:6px 0 4px}
+.slot{perspective:900px;width:min(420px,100%);height:220px;cursor:pointer}
+.flip{position:relative;width:100%;height:100%;transition:transform .6s;transform-style:preserve-3d}
+.slot.open .flip{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;border-radius:14px;backface-visibility:hidden;padding:20px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+.back{background:var(--green);color:var(--on)}
+.back b{font-size:44px;color:var(--gold2);line-height:1.1}
+.back span{font-size:14px;opacity:.85;margin-top:8px}
+.front{transform:rotateY(180deg);background:var(--card);border:2px solid var(--green);gap:6px}
+.front .no{color:var(--gold);font-weight:700;font-size:26px;line-height:1}
+.front h3{margin:0;color:var(--head);font-size:24px}
+.front p{margin:0;font-size:14px;color:var(--muted)}
+.empty{border:2px dashed var(--line);border-radius:14px;width:min(420px,100%);height:220px;display:flex;align-items:center;justify-content:center;color:var(--muted);text-align:center;padding:20px}
+.same{text-align:center;color:var(--muted);font-size:13px;margin:8px 0 0}
+.case{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px;margin-top:22px}
+.case header{display:flex;align-items:baseline;gap:12px;border-bottom:2px solid var(--green);padding-bottom:8px;margin-bottom:14px;flex-wrap:wrap}
+.case header .no{color:var(--gold);font-weight:700;font-size:24px}
+.case header h2{margin:0;color:var(--head);font-size:22px}
+.golink{display:flex;align-items:center;gap:10px;justify-content:space-between;background:var(--beige);border-radius:8px;padding:12px 14px;margin-bottom:16px;flex-wrap:wrap}
+.golink span{font-size:14px;flex:1;min-width:220px}
+.task{background:var(--mint);border-radius:8px;padding:12px 14px;font-size:15px;margin-bottom:16px}
+.task b{display:block;font-size:13px;color:var(--gold);margin-bottom:2px}
+.field{margin-bottom:14px}
+.field h4{margin:0 0 4px;font-size:13px;color:var(--gold)}
+.field p,.field ul,.field ol{margin:0;font-size:15px}
+.field ul,.field ol{padding-left:20px}
+.debate{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.debate div{border-radius:8px;padding:10px 12px;font-size:14px}
+.debate div:first-child{background:var(--beige)}.debate div:last-child{background:var(--mint)}
+.debate b{display:block;font-size:12px;color:var(--head)}
+@media (max-width:640px){.debate{grid-template-columns:1fr}}
+.think{border-left:4px solid var(--gold);padding:6px 12px;font-weight:500}
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{background:var(--green);color:var(--on);text-align:left;padding:7px 8px;font-weight:500}
+td{border-bottom:1px solid var(--line);padding:7px 8px;vertical-align:top}
+td a{color:var(--green2);word-break:break-all}
+.theories table{min-width:560px}
+details{margin-top:16px}
+details summary{cursor:pointer;font-weight:700;color:var(--head)}
+.note{font-size:12px;color:var(--muted);margin-top:14px}
+.btn:focus-visible,.slot:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){.flip{transition:none}}
+@media (max-width:640px){h1{font-size:23px;word-break:keep-all}}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow" id="eyebrow"></div>
+  <h1>문제 카드 뽑기</h1>
+  <p class="lead">우리 조를 고르고 카드를 눌러 뽑으세요. 같은 조는 누가, 어느 기기에서 뽑아도 같은 카드가 나옵니다. 조원 모두 자기 휴대폰으로 열어 같은 카드를 보며 토론하세요.</p>
+
+  <div class="flow" aria-label="오늘의 순서">
+    <div><b>1 안내</b><span>5분 · 지난 활동 떠올리기</span></div>
+    <div><b>2 목표</b><span>7분 · 누가·무엇을·언제까지·얼마나</span></div>
+    <div><b>3 수용자</b><span>7분 · 인구통계·신념·환경</span></div>
+    <div><b>4 이론</b><span>15분 · 다섯 중 두 개</span></div>
+    <div><b>5 정리</b><span>10분 · 캔버스 LMS 업로드</span></div>
+  </div>
+
+  <div class="pickrow">
+    <select id="team" aria-label="우리 조"></select>
+    <small id="teamhint"></small>
+  </div>
+  <div class="stage" id="stage"></div>
+  <p class="same hidden" id="same"></p>
+  <div id="detail"></div>
+  <p class="note" id="asof"></p>
+</div>
+
+<script>
+const D = {"title": "헬스커뮤니케이션 기획 캔버스 작성하기", "week": "12주차 조별활동", "date": "2026-11-11", "draw": {"seed": "2026-11-11 w12", "teams": 12, "note": "조 번호를 세 개씩 묶어(1~3조, 4~6조, …) 묶음마다 Q1~Q3을 한 번씩 섞어 배정한다. seed 를 바꾸고 다시 만들면 배정이 바뀐다."}, "questions": [{"no": 1, "name": "운동 부족과 시간 빈곤", "hook": "알면서도 하지 않는 운동, 의지의 문제인가 시간의 문제인가", "task": "운동 실천을 돕는 건강 커뮤니케이션 프로그램을 기획하시오. 조별로 구체적인 문제와 표적 수용자를 정하고, 수용자의 특성과 환경을 분석하시오. 측정 가능한 커뮤니케이션 목표를 설정한 뒤, 두 이론을 적용해 분석하고 각 이론이 제안하는 전략의 차이를 작성하시오.", "when": "2025 조사 · 한국", "facts": ["한국 성인 신체활동 부족률 58.1%(2022), 전 세계 31.3%의 약 1.9배", "'운동을 전혀 하지 않는다' 12.7% (2023년 8.0% → 2025년 12.7%, 건강인식조사)", "규칙적으로 운동하지 않는 이유: 시간 부족 72.2%, 관심 부족 47.5%, 시설 접근성 27.7%, 비용 26.0% (국민생활체육조사)", "배경: 장시간 근로, 수도권 왕복 통근 약 2시간, 퇴근 후 육아·가사"], "sides": [["개인 책임론", "의지와 습관의 문제이니 동기를 높이는 메시지가 답이다"], ["구조론", "시간 빈곤이 문제이니 노동·도시 정책이 답이다"]], "points": ["HBM의 '지각된 장벽'은 지각인가, 실제 장벽인가", "캠페인이 '의지'를 강조할 때 생기는 낙인", "커뮤니케이션이 할 수 있는 것과 없는 것 (지난 조별활동)"], "think": "'하루 10분 운동' 메시지는 시간 빈곤층에게도 효과가 있을까?", "sources": [{"kind": "기사", "title": "'시간 빈곤' 대한민국…국민 13% '운동 전혀 안한다'", "outlet": "헤럴드경제", "date": "2026-03-26", "url": "https://www.heraldk.com/article/2026032620300039863"}]}, {"no": 2, "name": "'냉장고 담배' 밈의 확산", "hook": "다이어트 콜라는 새로운 흡연 휴식인가", "task": "이 밈과 관련해 조별로 다루고 싶은 건강 커뮤니케이션 문제를 정하고 프로그램을 기획하시오. 표적 수용자를 정하고, 수용자의 특성과 환경을 분석하시오. 측정 가능한 커뮤니케이션 목표를 설정한 뒤, 두 이론을 적용해 분석하고 각 이론이 제안하는 전략의 차이를 작성하시오.", "when": "2023~ · 미국 틱톡 등 SNS", "facts": ["다이어트 콜라를 마시는 짧은 휴식을 '냉장고 담배(fridge cigarette)'라고 부르는 밈이 퍼졌다", "2023년 봄 #dietcokebreak 해시태그가 수백만 회 조회되며 'Z세대식 흡연 휴식'으로 불렸다", "틱톡커 레이첼 레노의 6월 8일 영상으로 표현이 크게 유행했다. 본인이 만든 말은 아니라고 밝혔다", "코카콜라 CEO: \"그런 식으로 포지셔닝하지 않는다\""], "sides": [["우려", "흡연의 의례를 빌려 와 감미료·카페인 음료 습관을 낭만화한다"], ["반론", "담배를 대신하는 무해한 휴식 의례일 뿐이다"]], "points": ["사용자가 만든 밈에 기업은 어디까지 책임이 있나", "흡연 은유의 재소환이 금연 규범에 미치는 영향", "왜 이렇게 빨리 퍼졌나: 혁신확산의 관찰가능성·시험가능성"], "think": "기업이 만들지 않은 밈이 매출을 올린다면, 그것은 마케팅인가?", "sources": [{"kind": "기사", "title": "Have a 'Fridge Cigarette': Diet Coke Is the New Smoke Break", "outlet": "TODAY.com", "date": "", "url": "https://www.today.com/today/amp/rcna215271"}, {"kind": "영상", "title": "Coca-Cola CEO on the \"fridge cigarette\" (\"We don't position Diet Coke in that way\")", "outlet": "YouTube", "date": "", "url": "https://www.youtube.com/watch?v=hlKr_b6EWag"}]}, {"no": 3, "name": "아스파탐 발암 가능성 보도", "hook": "'발암 가능 물질'과 '안전하다'가 같은 날 나왔다", "task": "아스파탐 관련 건강정보를 이해하고 판단하는 데 도움을 주는 프로그램을 기획하시오. 구체적인 문제와 표적 수용자를 정하고, 수용자의 특성과 환경을 분석하시오. 측정 가능한 커뮤니케이션 목표를 설정한 뒤, 두 이론을 적용해 분석하고 각 이론이 제안하는 전략의 차이를 작성하시오.", "when": "2023.7.14 · WHO 산하 IARC·JECFA 동시 발표", "facts": ["IARC가 아스파탐을 2B군(인체 발암 가능 물질)으로 분류했다. 김치 등 절임채소도 같은 2B군이다", "같은 날 JECFA는 1일섭취허용량(체중 1kg당 40mg)을 유지했다", "식약처: 국민 평균 섭취량은 허용량의 0.12%, 현행 기준 유지", "60kg 성인이 허용량에 이르려면 제로 콜라를 하루 약 55캔 마셔야 한다"], "sides": [["불안", "'발암' 분류가 나온 이상 피하는 것이 안전하다"], ["과학계", "2B는 근거의 강도를 나눈 분류이지 위험의 크기가 아니다"]], "points": ["위해성(hazard)과 위험도(risk)의 혼동", "같은 날 나온 두 메시지를 언론은 어떻게 전했나", "'발암'이라는 한 단어의 휴리스틱 효과 (CIP)"], "think": "'아스파탐 발암 가능' 헤드라인을 정확하면서도 읽히게 다시 써 보자", "sources": [{"kind": "기사", "title": "식약처 \"아스파탐 안전성 문제없어…현행 기준 유지\"", "outlet": "데일리팜", "date": "2023-07-14", "url": "https://m.dailypharm.com/user/news/26245"}, {"kind": "영상", "title": "WHO, 아스파탐 '발암가능물질' 분류 확정…일일허용량은 유지", "outlet": "연합뉴스TV", "date": "2023-07", "url": "https://www.youtube.com/watch?v=gP4ZF5G3-Lo"}]}], "theories": [{"id": "HBM", "name": "건강신념모델", "level": "개인", "core": "사람들이 건강을 지킬 기회를 왜 놓치는지 체계적으로 본다", "parts": [["지각된 민감성", "내가 그 상태에 처할 가능성에 대한 주관적 인식"], ["지각된 심각성", "그 결과가 얼마나 심각한지에 대한 평가"], ["지각된 이익", "행동이 위협을 줄여 준다는 믿음"], ["지각된 장벽", "행동에 따르는 부정적 측면 (시간·비용·민망함)"], ["행동 계기", "행동을 촉발하는 내적·외적 단서"], ["자기효능감", "그 행동을 해낼 수 있다는 믿음"]], "strategy": "장벽을 낮추고 행동 계기를 만든다 (예: 시간 장벽 낮추기, 검진 결과를 계기로)"}, {"id": "TPB", "name": "계획된 행동이론", "level": "개인", "core": "인지는 행동을 바로 일으키지 않고 반드시 행동의도를 거친다", "parts": [["행동에 대한 태도", "그 행동의 결과가 좋다·나쁘다는 평가"], ["주관적 규범", "주변 사람들이 그 행동을 어떻게 볼 거라는 믿음"], ["지각된 행동통제", "그 행동을 내가 해낼 수 있는지에 대한 통제감"], ["행동의도", "위 세 요인이 모여 만드는 '하겠다'는 의도"]], "strategy": "'다들 한다'는 규범 메시지, 통제감 높이기"}, {"id": "TTM", "name": "변화단계 모델", "level": "개인", "core": "행동 변화는 사건이 아니라 과정이며, 되돌아가는 것도 정상이다", "parts": [["무관심", "가까운 미래에 바꿀 의도가 없음 (\"내가 왜?\")"], ["관심", "6개월 안에 변화를 고려 (\"해야 하는데…\")"], ["결정", "한 달 안에 변화를 계획 (\"다음 달부터\")"], ["실행", "6개월 안에 행동을 바꿈"], ["유지", "6개월 이상 지속, 재발 대비"]], "strategy": "수용자가 있는 단계에 맞춘 메시지"}, {"id": "SCT", "name": "사회인지이론", "level": "대인", "core": "행동, 개인의 인지, 환경이 서로를 결정한다", "parts": [["상호결정론", "행동·개인 요인·환경 중 하나가 바뀌면 나머지도 바뀐다"], ["관찰학습", "타인의 행동과 그 결과를 보고 배운다"], ["자기효능감", "해낼 수 있다는 판단, 작은 성공이 쌓일수록 높아진다"], ["결과기대와 결과가치", "어떤 결과가 나올지, 그 결과가 얼마나 중요한지"]], "strategy": "따라 할 수 있는 모델과 작은 성공 경험"}, {"id": "DOI", "name": "혁신확산 이론", "level": "커뮤니티", "core": "다섯 속성이 높을수록 빨리 퍼지고, 오피니언 리더가 2단계 흐름을 매개한다", "parts": [["상대적 이점", "전보다 나은가?"], ["호환성", "수용자의 생활·가치와 맞는가?"], ["복잡성", "쉬운가?"], ["시험가능성", "먼저 해 볼 수 있나?"], ["관찰가능성", "결과가 남에게 보이나?"], ["수용자 유형·2단계 흐름", "초기 수용자와 오피니언 리더는 누구인가"]], "strategy": "초기 수용자·오피니언 리더 활용"}]};
+const ASSIGN = {"1조": 2, "2조": 3, "3조": 1, "4조": 1, "5조": 3, "6조": 2, "7조": 1, "8조": 2, "9조": 3, "10조": 3, "11조": 1, "12조": 2};
+const TEAMS = Object.keys(ASSIGN);
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const qOf = team => D.questions.find(q => q.no === ASSIGN[team]);
+let st = {team: "", opened: []};
+function save(){ try{ localStorage.setItem("w12cards", JSON.stringify(st)); }catch(e){} }
+function load(){ try{ const v = JSON.parse(localStorage.getItem("w12cards")); if (v && Array.isArray(v.opened)) st = v; }catch(e){} }
+
+function render(){
+  const t = st.team, open = t && st.opened.includes(t);
+  $("team").value = t;
+  $("same").classList.toggle("hidden", !t);
+  if (!t){
+    $("stage").innerHTML = "<div class='empty'>위에서 우리 조를 고르면<br>카드가 나옵니다.</div>";
+    $("detail").innerHTML = ""; $("teamhint").textContent = ""; return;
+  }
+  const q = qOf(t);
+  $("stage").innerHTML = `<div class="slot${open ? " open" : ""}" id="slot" role="button" tabindex="0" aria-label="${open ? esc(q.name) : esc(t) + " 카드 뽑기"}"><div class="flip">
+    <div class="face back"><b>${esc(t)}</b><span>${open ? "" : "눌러서 뽑기"}</span></div>
+    <div class="face front"><div class="no">Q${q.no}</div><h3>${esc(q.name)}</h3><p>${esc(q.hook)}</p></div>
+  </div></div>`;
+  $("same").textContent = t + " 조원은 누가 뽑아도 이 카드가 나옵니다.";
+  $("teamhint").textContent = open ? "" : "조원 중 누가 눌러도 됩니다.";
+  const slot = $("slot");
+  slot.onclick = () => {
+    if (st.opened.includes(t)) return;
+    st.opened.push(t); save(); slot.classList.add("open"); slot.querySelector(".back span").textContent = "";
+    $("teamhint").textContent = ""; slot.setAttribute("aria-label", q.name);
+    setTimeout(() => { renderDetail(t); $("detail").scrollIntoView({behavior: "smooth"}); }, 650);
+  };
+  slot.onkeydown = e => { if (e.key === "Enter" || e.key === " "){ e.preventDefault(); slot.click(); } };
+  if (open) renderDetail(t); else $("detail").innerHTML = "";
+}
+
+function renderDetail(t){
+  const q = qOf(t);
+  const li = a => a.map(x => "<li>" + esc(x) + "</li>").join("");
+  $("detail").innerHTML = `<article class="case">
+    <header><span class="no">Q${q.no}</span><h2>${esc(q.name)}</h2></header>
+    <div class="golink"><span><b>${esc(t)}</b>의 문제 카드입니다. 서기 한 명이 기획 캔버스를 쓰고, 조원은 이 화면을 보며 함께 토론하세요.</span>
+      <a class="btn" href="planning-canvas.html?team=${encodeURIComponent(t)}">서기: 기획 캔버스 쓰기</a></div>
+    <div class="task"><b>과제</b>${esc(q.task)}</div>
+    <div class="field"><h4>언제 · 어디서</h4><p>${esc(q.when)}</p></div>
+    <div class="field"><h4>무슨 일이 있었나</h4><ul>${li(q.facts)}</ul></div>
+    <div class="field"><h4>논란</h4><div class="debate">${q.sides.map(s => `<div><b>${esc(s[0])}</b>${esc(s[1])}</div>`).join("")}</div></div>
+    <div class="field"><h4>주요 쟁점</h4><ol>${li(q.points)}</ol></div>
+    <div class="field"><h4>생각해 보기</h4><p class="think">${esc(q.think)}</p></div>
+    <div class="field"><h4>사례 자료</h4><div class="tablewrap"><table><thead><tr><th>구분</th><th>자료</th><th>매체·날짜</th></tr></thead><tbody>
+      ${q.sources.map(s => `<tr><td>${esc(s.kind)}</td><td><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a></td><td>${esc(s.outlet)}${s.date ? "<br>" + esc(s.date) : ""}</td></tr>`).join("")}
+    </tbody></table></div></div>
+    <details class="theories"><summary>고를 수 있는 이론 다섯 가지 한눈에</summary>
+      <div class="tablewrap" style="margin-top:8px"><table><thead><tr><th>이론</th><th>수준</th><th>핵심 구성요소</th><th>가리키는 전략</th></tr></thead><tbody>
+      ${D.theories.map(h => `<tr><td><b>${esc(h.id)}</b><br>${esc(h.name)}</td><td>${esc(h.level)}</td><td>${esc(h.parts.map(p => p[0]).join(", "))}</td><td>${esc(h.strategy)}</td></tr>`).join("")}
+      </tbody></table></div>
+    </details>
+  </article>`;
+}
+
+$("eyebrow").textContent = D.week + " · " + D.title;
+$("team").innerHTML = "<option value=''>우리 조를 고르세요</option>" + TEAMS.map(t => "<option>" + t + "</option>").join("");
+$("team").onchange = () => { st.team = $("team").value; save(); render(); };
+load();
+if (st.team && !TEAMS.includes(st.team)) st.team = "";
+render();
+$("asof").textContent = "사례와 자료 링크는 12주차 강의 슬라이드에서 가져왔습니다.";
+</script>
+</body>
+</html>

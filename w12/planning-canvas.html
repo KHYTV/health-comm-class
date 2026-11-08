@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>기획 캔버스</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--green:#1f5145;--green2:#2e6b5c;--head:#1f5145;--gold:#b5781f;--gold2:#e9b45a;--mint:#e6efec;--beige:#f3e6cf;--ink:#1d2b27;--muted:#5d6f69;--line:#d5e0dc;--bg:#fbfaf6;--card:#ffffff;--field:#ffffff;--zebra:#f5f8f7;--on:#ffffff;--err:#b23b2e}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--green:#2f7a66;--green2:#7cc4ad;--head:#9fd8c5;--gold:#e0a54e;--gold2:#f0c274;--mint:#1f2e2a;--beige:#3a3123;--ink:#e3ece8;--muted:#9fb3ac;--line:#2f403b;--bg:#111816;--card:#18221f;--field:#1d2925;--zebra:#1b2623;--on:#ffffff;--err:#ff8a7a;color-scheme:dark}}
+:root[data-theme="dark"]{--green:#2f7a66;--green2:#7cc4ad;--head:#9fd8c5;--gold:#e0a54e;--gold2:#f0c274;--mint:#1f2e2a;--beige:#3a3123;--ink:#e3ece8;--muted:#9fb3ac;--line:#2f403b;--bg:#111816;--card:#18221f;--field:#1d2925;--zebra:#1b2623;--on:#ffffff;--err:#ff8a7a;color-scheme:dark}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans KR",system-ui,sans-serif;font-size:16px;line-height:1.55}
+.wrap{max-width:880px;margin:0 auto;padding:28px 16px 64px}
+.eyebrow{color:var(--gold);font-weight:700;font-size:13px}
+h1{color:var(--head);font-size:28px;margin:4px 0 18px}
+.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:20px}
+.step{min-width:0;padding:8px 10px;border-radius:8px;background:var(--mint);color:var(--muted);font:inherit;font-size:13px;font-weight:500;border:0;text-align:left;cursor:pointer}
+.step b{display:block;font-size:18px;color:var(--gold)}
+.step small{display:block;font-size:11px;opacity:.8}
+.step.on{background:var(--green);color:var(--on)}.step.on b{color:var(--gold2)}
+.step.done{background:var(--beige);color:var(--ink)}
+@media (max-width:640px){.step{font-size:11px;padding:6px}.step b{font-size:15px}.step small{display:none}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px;margin-bottom:16px}
+.card h2{margin:0 0 4px;font-size:20px;color:var(--head)}
+.hint{color:var(--muted);font-size:14px;margin:0 0 14px}
+label{display:block;font-weight:500;font-size:14px;margin:14px 0 6px}
+label small{color:var(--muted);font-weight:400}
+input[type=text],textarea,select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;background:var(--field);color:var(--ink)}
+textarea{min-height:90px;resize:vertical}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--green2);border-color:transparent}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:640px){.row{grid-template-columns:1fr}}
+.btn{border:0;border-radius:8px;padding:11px 18px;font:inherit;font-weight:700;cursor:pointer;background:var(--green);color:var(--on);text-decoration:none;display:inline-block}
+.btn.ghost{background:transparent;color:var(--head);border:1px solid var(--head)}
+.btn.gold{background:var(--gold)}
+.btn.small{padding:6px 12px;font-size:14px}
+.linkbtn{border:0;background:none;color:var(--green2);text-decoration:underline;cursor:pointer;font:inherit;font-size:14px;padding:0}
+.actions{display:flex;gap:8px;justify-content:space-between;margin-top:20px;flex-wrap:wrap}
+.err{color:var(--err);font-size:14px;margin-top:8px;min-height:1em}
+.qbox{background:var(--mint);border-radius:10px;padding:12px 14px;margin:12px 0 4px}
+.qbox b.q{color:var(--gold);margin-right:6px}
+.qbox p{margin:4px 0 0;font-size:14px}
+.qbox a{font-size:13px;color:var(--green2)}
+.remind{background:var(--beige);border-radius:10px;padding:12px 14px;font-size:14px;margin-top:14px}
+.remind b{display:block;color:var(--head)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.chip{background:var(--mint);border-radius:999px;padding:4px 6px 4px 12px;font-size:14px;display:flex;align-items:center;gap:4px}
+.chip button{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:16px;line-height:1;padding:0 4px}
+.inline{display:flex;gap:8px}.inline input{flex:1}
+.tips{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
+.tips div{background:var(--mint);border-radius:10px;padding:10px 12px;font-size:13px}
+.tips b{display:block;color:var(--head);font-size:14px;margin-bottom:2px}
+.tips ul{margin:0;padding-left:18px}
+@media (max-width:640px){.tips{grid-template-columns:1fr}}
+.sentence{background:var(--beige);border-radius:8px;padding:10px 12px;font-weight:500;min-height:1.5em;margin-top:6px}
+.checks label{display:flex;gap:8px;align-items:flex-start;font-weight:400;margin:6px 0}
+.checks input{margin-top:5px}
+.theorypick{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+@media (max-width:640px){.theorypick{grid-template-columns:repeat(2,1fr)}}
+.theorypick button{border:1px solid var(--line);background:var(--field);color:var(--ink);border-radius:10px;padding:10px;text-align:left;cursor:pointer;font:inherit}
+.theorypick button b{display:block;color:var(--head);font-size:16px}
+.theorypick button small{font-size:12px;color:var(--muted)}
+.theorypick button.on{background:var(--green);border-color:var(--green);color:var(--on)}
+.theorypick button.on b,.theorypick button.on small{color:var(--on)}
+.theorypick button .n{float:right;font-weight:700;color:var(--gold2)}
+.tpanel{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:14px}
+.tpanel h3{margin:0;color:var(--head);font-size:17px}
+.tpanel .core{color:var(--muted);font-size:13px;margin:2px 0 6px}
+.part label{margin:10px 0 4px}
+.part label small{display:block}
+.strat{background:var(--mint);border-radius:8px;padding:8px 10px;font-size:13px;margin-top:12px}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0 4px}
+.compare div{background:var(--mint);border-radius:8px;padding:10px 12px;font-size:14px;white-space:pre-wrap}
+.compare b{display:block;color:var(--head)}
+@media (max-width:640px){.compare{grid-template-columns:1fr}}
+.canvas{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px}
+.canvas th{background:var(--green);color:var(--on);text-align:left;padding:8px;font-weight:500}
+.canvas td{border-bottom:1px solid var(--line);padding:8px;vertical-align:top;white-space:pre-wrap}
+.canvas td:first-child{font-weight:700;color:var(--head);width:34%}
+.canvas tr:nth-child(even) td{background:var(--zebra)}
+.canvas td.missing{color:var(--err);font-weight:400}
+.submit{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:18px}
+.aside{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px}
+.msg{font-size:14px;color:var(--head);margin:8px 0 0;min-height:1em}
+.copybox{width:100%;min-height:120px;margin-top:10px;font-size:12px}
+details.ai{margin-top:18px;border-top:1px solid var(--line);padding-top:12px}
+details.ai summary{cursor:pointer;font-weight:700;color:var(--head)}
+.aipick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0 6px}
+@media (max-width:520px){.aipick{grid-template-columns:1fr}}
+.aipick a{display:flex;flex-direction:column;gap:2px;text-decoration:none;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--field);color:var(--ink)}
+.aipick a b{font-size:16px;color:var(--head)}
+.aipick a small{font-size:12px;color:var(--muted)}
+.aipick a:hover,.aipick a.on{border-color:var(--green);box-shadow:0 0 0 1px var(--green)}
+.aistatus{background:var(--beige);border-radius:8px;padding:10px 12px;font-size:14px;margin:6px 0 4px}
+pre.prompt{background:var(--mint);border-radius:8px;padding:12px;white-space:pre-wrap;font-size:12px;max-height:200px;overflow:auto;margin:6px 0 0}
+.ask{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--card);border-top:2px solid var(--green);box-shadow:0 -6px 24px rgba(0,0,0,.18);padding:14px max(16px,env(safe-area-inset-left,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-right,0px));display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap}
+.ask p{margin:0;font-weight:500;color:var(--ink)}
+.btn:focus-visible,.step:focus-visible,.theorypick button:focus-visible,.aipick a:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+@media (max-width:640px){h1{font-size:23px;word-break:keep-all}}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow" id="eyebrow"></div>
+  <h1>헬스커뮤니케이션 기획 캔버스</h1>
+
+  <div class="steps">
+    <button class="step" data-s="1"><b>1</b>조·이슈<small>5분</small></button>
+    <button class="step" data-s="2"><b>2</b>목표<small>7분</small></button>
+    <button class="step" data-s="3"><b>3</b>수용자<small>7분</small></button>
+    <button class="step" data-s="4"><b>4</b>이론 두 개<small>15분</small></button>
+    <button class="step" data-s="5"><b>5</b>정리·제출<small>10분</small></button>
+  </div>
+
+  <section class="card" id="s1">
+    <h2>조와 조별 이슈</h2>
+    <p class="hint">서기 한 명이 이 페이지에 쓰고, 마지막에 조 제출 파일을 LMS에 올립니다. 쓴 내용은 이 기기에만 저장됩니다.</p>
+    <label for="team">우리 조</label>
+    <select id="team"></select>
+    <div class="qbox hidden" id="qbox"></div>
+    <label for="memberIn">조원 이름 <small>서기 포함, 한 명씩 추가</small></label>
+    <div class="inline"><input type="text" id="memberIn" placeholder="예: 김민지"><button class="btn ghost" id="addMember">추가</button></div>
+    <div class="chips" id="members"></div>
+    <label for="issue">조별 이슈 <small>카드의 사례 안에서 우리 조가 다룰 구체적인 문제</small></label>
+    <textarea id="issue" placeholder="예: 통학 시간이 긴 1학년이 '시간이 없다'며 근력운동을 시작하지 않는다"></textarea>
+    <div class="remind" id="remind"><b>지난 조별활동 떠올리기</b>'커뮤니케이션이 할 수 있는 것과 없는 것'에서 우리 조가 정리한 커뮤니케이션의 몫은 무엇이었나요? 이번 기획은 그 몫 안에서 목표를 세웁니다.</div>
+    <div class="err" id="e1"></div>
+    <div class="actions"><span></span><button class="btn" data-next="2">다음: 목표 쓰기</button></div>
+  </section>
+
+  <section class="card hidden" id="s2">
+    <h2>커뮤니케이션 목표</h2>
+    <div class="tips">
+      <div><b>좋은 목표의 조건</b><ul><li>보건 프로그램의 목표(goal)를 돕는다</li><li>합리적·현실적이다</li><li>변화·대상·기간이 구체적이다</li><li>측정할 수 있고 우선순위가 있다</li></ul></div>
+      <div><b>현실 감각</b><ul><li>100% 변화는 불가능하다</li><li>상업 마케터는 매출 2~3% 증가도 큰 성공으로 본다</li><li>인식·지식이 늘었다고 행동이 바뀐다고 가정하지 말라</li></ul></div>
+    </div>
+    <div class="row">
+      <div><label for="g_who">누가 <small>표적 수용자</small></label><input type="text" id="g_who" placeholder="예: 운동을 전혀 하지 않는 1학년"></div>
+      <div><label for="g_what">무엇을 <small>바뀌어야 할 인식·태도·행동</small></label><input type="text" id="g_what" placeholder="예: 주 2회 10분 맨몸 근력운동을 한다"></div>
+    </div>
+    <div class="row">
+      <div><label for="g_when">언제까지</label><input type="text" id="g_when" placeholder="예: 2026년 12월 말까지"></div>
+      <div><label for="g_much">얼마나 <small>측정할 수 있는 수치</small></label><input type="text" id="g_much" placeholder="예: 20%"></div>
+    </div>
+    <label for="goal">목표 문장 <small>네 칸을 채우면 자동으로 이어집니다. 다듬어도 됩니다.</small></label>
+    <textarea id="goal" style="min-height:70px"></textarea>
+    <label>스스로 점검</label>
+    <div class="checks" id="checks"></div>
+    <div class="err" id="e2"></div>
+    <div class="actions"><button class="btn ghost" data-go="1">이전</button><button class="btn" data-next="3">다음: 수용자 정의</button></div>
+  </section>
+
+  <section class="card hidden" id="s3">
+    <h2>표적 수용자</h2>
+    <p class="hint">표적 인구(누가 가장 영향받고 위험한가)에서 출발해 태도·인구통계·지역·행동 패턴으로 좁히세요. 수용자의 능력과 의지가 목표의 현실성을 정하므로, 필요하면 목표로 돌아가 고치세요.</p>
+    <label for="aud_demo">인구통계 <small>나이, 성별, 지역, 소득, 직업·학년 등</small></label>
+    <textarea id="aud_demo"></textarea>
+    <label for="aud_belief">신념·현재 행동 <small>무엇을 믿고, 지금 어떻게 행동하나</small></label>
+    <textarea id="aud_belief"></textarea>
+    <label for="aud_env">사회적·물리적 환경 <small>주변 사람, 시간·비용·시설, 정보를 얻는 채널</small></label>
+    <textarea id="aud_env"></textarea>
+    <div class="err" id="e3"></div>
+    <div class="actions"><button class="btn ghost" data-go="2">이전</button><button class="btn" data-next="4">다음: 이론 고르기</button></div>
+  </section>
+
+  <section class="card hidden" id="s4">
+    <h2>이론 두 개로 수용자 분석</h2>
+    <p class="hint">다섯 이론 중 두 개를 고르세요. 구성요소마다 '우리 수용자는 어떤가'를 짧게 쓰고(두 칸 이상), 그 이론이 가리키는 전략을 정리합니다.</p>
+    <div class="theorypick" id="theorypick"></div>
+    <div id="tpanels"></div>
+    <div class="err" id="e4"></div>
+    <div class="actions"><button class="btn ghost" data-go="3">이전</button><button class="btn" data-next="5">다음: 정리·제출</button></div>
+  </section>
+
+  <section class="card hidden" id="s5">
+    <h2>전략의 차이와 제출</h2>
+    <p class="hint">두 이론이 각각 무엇을 바꾸려 하는지 비교해 보세요. 같은 수용자인데도 메시지, 채널, 바꾸려는 대상이 어떻게 달라지나요?</p>
+    <div class="compare" id="compare"></div>
+    <label for="diff">두 이론이 가리키는 전략의 차이</label>
+    <textarea id="diff" style="min-height:110px"></textarea>
+    <label>기획 캔버스</label>
+    <div style="overflow-x:auto"><table class="canvas"><thead><tr><th>항목</th><th>작성 내용</th></tr></thead><tbody id="canvas"></tbody></table></div>
+    <div class="err" id="e5"></div>
+    <div class="submit"><button class="btn" id="csv">조 제출 파일 내려받기</button><span class="hint" id="fname" style="margin:0"></span></div>
+    <p class="msg" id="msg"></p>
+    <div class="aside"><button class="linkbtn" id="copytext">캔버스를 글로 복사하기 (단톡방·LMS 글쓰기)</button><button class="linkbtn" id="reset">처음부터 다시 쓰기</button></div>
+    <textarea id="copybox" class="copybox hidden" readonly aria-label="복사할 캔버스"></textarea>
+    <details class="ai"><summary>AI에게 점검받기 (선택)</summary>
+      <p class="hint" style="margin-top:8px">AI가 캔버스를 대신 써 주지 않고, 항목별 판정과 생각해 볼 질문만 줍니다. 조원 이름은 보내지 않습니다. 아래에서 AI를 누르면 프롬프트가 복사되고 새 탭이 열립니다. 로그인한 뒤 붙여넣고 보내세요.</p>
+      <div class="aipick" id="aipick">
+        <a href="https://gpt.jbnu.ai/" target="_blank" rel="noopener" data-ai="전북대 AI"><b>전북대 AI</b><small>gpt.jbnu.ai · 전북대 통합 로그인</small></a>
+        <a href="https://gemini.google.com/app" target="_blank" rel="noopener" data-ai="Gemini"><b>Gemini</b><small>Google 계정 로그인</small></a>
+        <a href="https://chatgpt.com/" target="_blank" rel="noopener" data-ai="ChatGPT"><b>ChatGPT</b><small>OpenAI 계정 로그인</small></a>
+      </div>
+      <div class="aistatus hidden" id="aistatus" role="status"></div>
+      <details><summary class="hint" style="font-weight:400">프롬프트 직접 보기</summary><pre class="prompt" id="prompt"></pre></details>
+    </details>
+  </section>
+</div>
+
+<script>
+function askConfirm(msg, yesLabel, noLabel, onYes, onNo){
+  document.querySelectorAll(".ask").forEach(x => x.remove());
+  const bar = document.createElement("div"); bar.className = "ask"; bar.setAttribute("role", "alertdialog");
+  const p = document.createElement("p"); p.textContent = msg;
+  const y = document.createElement("button"); y.className = "btn"; y.textContent = yesLabel;
+  const n = document.createElement("button"); n.className = "btn ghost"; n.textContent = noLabel;
+  y.onclick = () => { bar.remove(); onYes && onYes(); };
+  n.onclick = () => { bar.remove(); onNo && onNo(); };
+  bar.append(p, y, n); document.body.appendChild(bar); y.focus();
+}
+const D = {"title": "헬스커뮤니케이션 기획 캔버스 작성하기", "week": "12주차 조별활동", "date": "2026-11-11", "draw": {"seed": "2026-11-11 w12", "teams": 12, "note": "조 번호를 세 개씩 묶어(1~3조, 4~6조, …) 묶음마다 Q1~Q3을 한 번씩 섞어 배정한다. seed 를 바꾸고 다시 만들면 배정이 바뀐다."}, "questions": [{"no": 1, "name": "운동 부족과 시간 빈곤", "hook": "알면서도 하지 않는 운동, 의지의 문제인가 시간의 문제인가", "task": "운동 실천을 돕는 건강 커뮤니케이션 프로그램을 기획하시오. 조별로 구체적인 문제와 표적 수용자를 정하고, 수용자의 특성과 환경을 분석하시오. 측정 가능한 커뮤니케이션 목표를 설정한 뒤, 두 이론을 적용해 분석하고 각 이론이 제안하는 전략의 차이를 작성하시오.", "when": "2025 조사 · 한국", "facts": ["한국 성인 신체활동 부족률 58.1%(2022), 전 세계 31.3%의 약 1.9배", "'운동을 전혀 하지 않는다' 12.7% (2023년 8.0% → 2025년 12.7%, 건강인식조사)", "규칙적으로 운동하지 않는 이유: 시간 부족 72.2%, 관심 부족 47.5%, 시설 접근성 27.7%, 비용 26.0% (국민생활체육조사)", "배경: 장시간 근로, 수도권 왕복 통근 약 2시간, 퇴근 후 육아·가사"], "sides": [["개인 책임론", "의지와 습관의 문제이니 동기를 높이는 메시지가 답이다"], ["구조론", "시간 빈곤이 문제이니 노동·도시 정책이 답이다"]], "points": ["HBM의 '지각된 장벽'은 지각인가, 실제 장벽인가", "캠페인이 '의지'를 강조할 때 생기는 낙인", "커뮤니케이션이 할 수 있는 것과 없는 것 (지난 조별활동)"], "think": "'하루 10분 운동' 메시지는 시간 빈곤층에게도 효과가 있을까?", "sources": [{"kind": "기사", "title": "'시간 빈곤' 대한민국…국민 13% '운동 전혀 안한다'", "outlet": "헤럴드경제", "date": "2026-03-26", "url": "https://www.heraldk.com/article/2026032620300039863"}]}, {"no": 2, "name": "'냉장고 담배' 밈의 확산", "hook": "다이어트 콜라는 새로운 흡연 휴식인가", "task": "이 밈과 관련해 조별로 다루고 싶은 건강 커뮤니케이션 문제를 정하고 프로그램을 기획하시오. 표적 수용자를 정하고, 수용자의 특성과 환경을 분석하시오. 측정 가능한 커뮤니케이션 목표를 설정한 뒤, 두 이론을 적용해 분석하고 각 이론이 제안하는 전략의 차이를 작성하시오.", "when": "2023~ · 미국 틱톡 등 SNS", "facts": ["다이어트 콜라를 마시는 짧은 휴식을 '냉장고 담배(fridge cigarette)'라고 부르는 밈이 퍼졌다", "2023년 봄 #dietcokebreak 해시태그가 수백만 회 조회되며 'Z세대식 흡연 휴식'으로 불렸다", "틱톡커 레이첼 레노의 6월 8일 영상으로 표현이 크게 유행했다. 본인이 만든 말은 아니라고 밝혔다", "코카콜라 CEO: \"그런 식으로 포지셔닝하지 않는다\""], "sides": [["우려", "흡연의 의례를 빌려 와 감미료·카페인 음료 습관을 낭만화한다"], ["반론", "담배를 대신하는 무해한 휴식 의례일 뿐이다"]], "points": ["사용자가 만든 밈에 기업은 어디까지 책임이 있나", "흡연 은유의 재소환이 금연 규범에 미치는 영향", "왜 이렇게 빨리 퍼졌나: 혁신확산의 관찰가능성·시험가능성"], "think": "기업이 만들지 않은 밈이 매출을 올린다면, 그것은 마케팅인가?", "sources": [{"kind": "기사", "title": "Have a 'Fridge Cigarette': Diet Coke Is the New Smoke Break", "outlet": "TODAY.com", "date": "", "url": "https://www.today.com/today/amp/rcna215271"}, {"kind": "영상", "title": "Coca-Cola CEO on the \"fridge cigarette\" (\"We don't position Diet Coke in that way\")", "outlet": "YouTube", "date": "", "url": "https://www.youtube.com/watch?v=hlKr_b6EWag"}]}, {"no": 3, "name": "아스파탐 발암 가능성 보도", "hook": "'발암 가능 물질'과 '안전하다'가 같은 날 나왔다", "task": "아스파탐 관련 건강정보를 이해하고 판단하는 데 도움을 주는 프로그램을 기획하시오. 구체적인 문제와 표적 수용자를 정하고, 수용자의 특성과 환경을 분석하시오. 측정 가능한 커뮤니케이션 목표를 설정한 뒤, 두 이론을 적용해 분석하고 각 이론이 제안하는 전략의 차이를 작성하시오.", "when": "2023.7.14 · WHO 산하 IARC·JECFA 동시 발표", "facts": ["IARC가 아스파탐을 2B군(인체 발암 가능 물질)으로 분류했다. 김치 등 절임채소도 같은 2B군이다", "같은 날 JECFA는 1일섭취허용량(체중 1kg당 40mg)을 유지했다", "식약처: 국민 평균 섭취량은 허용량의 0.12%, 현행 기준 유지", "60kg 성인이 허용량에 이르려면 제로 콜라를 하루 약 55캔 마셔야 한다"], "sides": [["불안", "'발암' 분류가 나온 이상 피하는 것이 안전하다"], ["과학계", "2B는 근거의 강도를 나눈 분류이지 위험의 크기가 아니다"]], "points": ["위해성(hazard)과 위험도(risk)의 혼동", "같은 날 나온 두 메시지를 언론은 어떻게 전했나", "'발암'이라는 한 단어의 휴리스틱 효과 (CIP)"], "think": "'아스파탐 발암 가능' 헤드라인을 정확하면서도 읽히게 다시 써 보자", "sources": [{"kind": "기사", "title": "식약처 \"아스파탐 안전성 문제없어…현행 기준 유지\"", "outlet": "데일리팜", "date": "2023-07-14", "url": "https://m.dailypharm.com/user/news/26245"}, {"kind": "영상", "title": "WHO, 아스파탐 '발암가능물질' 분류 확정…일일허용량은 유지", "outlet": "연합뉴스TV", "date": "2023-07", "url": "https://www.youtube.com/watch?v=gP4ZF5G3-Lo"}]}], "theories": [{"id": "HBM", "name": "건강신념모델", "level": "개인", "core": "사람들이 건강을 지킬 기회를 왜 놓치는지 체계적으로 본다", "parts": [["지각된 민감성", "내가 그 상태에 처할 가능성에 대한 주관적 인식"], ["지각된 심각성", "그 결과가 얼마나 심각한지에 대한 평가"], ["지각된 이익", "행동이 위협을 줄여 준다는 믿음"], ["지각된 장벽", "행동에 따르는 부정적 측면 (시간·비용·민망함)"], ["행동 계기", "행동을 촉발하는 내적·외적 단서"], ["자기효능감", "그 행동을 해낼 수 있다는 믿음"]], "strategy": "장벽을 낮추고 행동 계기를 만든다 (예: 시간 장벽 낮추기, 검진 결과를 계기로)"}, {"id": "TPB", "name": "계획된 행동이론", "level": "개인", "core": "인지는 행동을 바로 일으키지 않고 반드시 행동의도를 거친다", "parts": [["행동에 대한 태도", "그 행동의 결과가 좋다·나쁘다는 평가"], ["주관적 규범", "주변 사람들이 그 행동을 어떻게 볼 거라는 믿음"], ["지각된 행동통제", "그 행동을 내가 해낼 수 있는지에 대한 통제감"], ["행동의도", "위 세 요인이 모여 만드는 '하겠다'는 의도"]], "strategy": "'다들 한다'는 규범 메시지, 통제감 높이기"}, {"id": "TTM", "name": "변화단계 모델", "level": "개인", "core": "행동 변화는 사건이 아니라 과정이며, 되돌아가는 것도 정상이다", "parts": [["무관심", "가까운 미래에 바꿀 의도가 없음 (\"내가 왜?\")"], ["관심", "6개월 안에 변화를 고려 (\"해야 하는데…\")"], ["결정", "한 달 안에 변화를 계획 (\"다음 달부터\")"], ["실행", "6개월 안에 행동을 바꿈"], ["유지", "6개월 이상 지속, 재발 대비"]], "strategy": "수용자가 있는 단계에 맞춘 메시지"}, {"id": "SCT", "name": "사회인지이론", "level": "대인", "core": "행동, 개인의 인지, 환경이 서로를 결정한다", "parts": [["상호결정론", "행동·개인 요인·환경 중 하나가 바뀌면 나머지도 바뀐다"], ["관찰학습", "타인의 행동과 그 결과를 보고 배운다"], ["자기효능감", "해낼 수 있다는 판단, 작은 성공이 쌓일수록 높아진다"], ["결과기대와 결과가치", "어떤 결과가 나올지, 그 결과가 얼마나 중요한지"]], "strategy": "따라 할 수 있는 모델과 작은 성공 경험"}, {"id": "DOI", "name": "혁신확산 이론", "level": "커뮤니티", "core": "다섯 속성이 높을수록 빨리 퍼지고, 오피니언 리더가 2단계 흐름을 매개한다", "parts": [["상대적 이점", "전보다 나은가?"], ["호환성", "수용자의 생활·가치와 맞는가?"], ["복잡성", "쉬운가?"], ["시험가능성", "먼저 해 볼 수 있나?"], ["관찰가능성", "결과가 남에게 보이나?"], ["수용자 유형·2단계 흐름", "초기 수용자와 오피니언 리더는 누구인가"]], "strategy": "초기 수용자·오피니언 리더 활용"}]};
+const ASSIGN = {"1조": 2, "2조": 3, "3조": 1, "4조": 1, "5조": 3, "6조": 2, "7조": 1, "8조": 2, "9조": 3, "10조": 3, "11조": 1, "12조": 2};
+const PROMPT_HEAD = "너는 건강 커뮤니케이션 수업의 조교다. 아래는 한 조가 쓴 '헬스커뮤니케이션 기획 캔버스'다.\n캔버스를 대신 써 주지 말고, 학생들이 스스로 고칠 수 있도록 점검만 해라.\n\n규칙\n1. 캔버스 내용을 새로 써 주거나 모범 답안을 보여 주지 마라. 고칠 방향은 질문으로 던져라.\n2. 항목마다 ○(충분), △(보완 필요), ×(빠짐·잘못) 중 하나로 판정하고 이유를 한 줄로 써라.\n3. 커뮤니케이션 목표: 누가·무엇을·언제까지·얼마나가 모두 있는가, 측정할 수 있는가, 현실적인가(100% 변화를 기대하지 않는가), 인식·지식이 늘면 행동도 바뀐다고 가정하지 않는가를 본다.\n4. 표적 수용자: 넓은 표적 인구에 머물지 않고 태도·인구통계·지역·행동 패턴으로 좁혔는가를 본다.\n5. 이론 분석: 그 이론의 구성요소를 정확한 뜻으로 썼는가, 앞에서 정의한 수용자와 이어지는가를 본다.\n6. 전략의 차이: 두 이론이 각각 '무엇을 바꾸려 하는가'의 차이로 설명했는가를 본다.\n7. 시간·비용·시설·규제처럼 메시지만으로 풀 수 없는 구조적 장벽이 보이면, 그것도 질문으로 짚어라.\n8. 아래 출력 형식만 지켜라. 인사말과 맺음말은 쓰지 마라.\n\n출력 형식\n| 항목 | 판정 | 이유 | 생각해 볼 질문 |\n항목은 조별 이슈, 커뮤니케이션 목표, 표적 수용자, 이론 1, 이론 2, 전략의 차이 순서로 쓴다.\n표 아래에 \"가장 먼저 고칠 것:\"으로 시작하는 한 문장을 써라.\n\n캔버스\n";
+const FORM_ID = "기획캔버스 v1";
+const TEAMS = Object.keys(ASSIGN);
+const CHECKS = ["보건 프로그램의 목표(goal)를 돕는다", "100% 변화가 아니라 현실적인 수치다", "누가·무엇을·언제까지·얼마나가 모두 들어갔다", "나중에 조사나 기록으로 측정할 수 있다", "인식·지식 변화를 행동 변화로 착각하지 않았다"];
+const TEXT_IDS = ["issue","g_who","g_what","g_when","g_much","goal","aud_demo","aud_belief","aud_env","diff"];
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const qOf = team => D.questions.find(q => q.no === ASSIGN[team]);
+const thOf = id => D.theories.find(h => h.id === id);
+const fresh = () => ({v:1, team:"", members:[], f:{}, checks:[], pick:[], th:{}, goalAuto:true, step:1});
+let st = fresh();
+function save(){ try{ localStorage.setItem("plancanvas", JSON.stringify(st)); }catch(e){} }
+function load(){ try{ const v = JSON.parse(localStorage.getItem("plancanvas")); if (v && v.v === 1) st = Object.assign(fresh(), v); }catch(e){} }
+const val = k => (st.f[k] || "").trim();
+
+// 단계 이동
+function show(n){
+  st.step = n; save();
+  for (let i = 1; i <= 5; i++) $("s" + i).classList.toggle("hidden", i !== n);
+  document.querySelectorAll(".step").forEach(el => { const s = +el.dataset.s; el.className = "step" + (s === n ? " on" : s < n ? " done" : ""); });
+  if (n === 4) renderTheories();
+  if (n === 5) renderSummary();
+  window.scrollTo(0, 0);
+}
+const CHECK = {
+  1: () => !st.team ? "우리 조를 골라 주세요." : !st.members.length ? "조원 이름을 한 명 이상 추가해 주세요." : !val("issue") ? "조별 이슈를 적어 주세요." : "",
+  2: () => ["g_who","g_what","g_when","g_much"].some(k => !val(k)) ? "누가·무엇을·언제까지·얼마나를 모두 채워 주세요." : !val("goal") ? "목표 문장을 적어 주세요." : "",
+  3: () => ["aud_demo","aud_belief","aud_env"].some(k => !val(k)) ? "세 칸을 모두 채워 주세요." : "",
+  4: () => st.pick.length !== 2 ? "이론을 두 개 골라 주세요." : st.pick.map(theoryGap).find(Boolean) || ""
+};
+function theoryGap(id){
+  const t = st.th[id] || {}, filled = Object.values(t.parts || {}).filter(x => String(x).trim()).length;
+  return filled < 2 ? id + "의 구성요소를 두 칸 이상 채워 주세요." : !String(t.strategy || "").trim() ? id + "가 가리키는 전략을 적어 주세요." : "";
+}
+document.querySelectorAll("[data-next]").forEach(b => b.onclick = () => {
+  const from = +b.dataset.next - 1, msg = CHECK[from]();
+  $("e" + from).textContent = msg; if (!msg) show(+b.dataset.next);
+});
+document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => show(+b.dataset.go));
+document.querySelectorAll(".step").forEach(b => b.onclick = () => show(+b.dataset.s));
+
+// 1. 조·이슈
+function renderTeam(){
+  const q = st.team && qOf(st.team);
+  $("qbox").classList.toggle("hidden", !q);
+  if (q) $("qbox").innerHTML = "<b class='q'>Q" + q.no + "</b><b>" + esc(q.name) + "</b><p>" + esc(q.task) + "</p><a href='index.html'>카드와 사례 자료 다시 보기</a>";
+  $("eyebrow").textContent = D.week + (st.team ? " · " + st.team + (q ? " · Q" + q.no + " " + q.name : "") : "");
+}
+function renderMembers(){
+  $("members").innerHTML = st.members.map((m, i) => "<span class='chip'>" + esc(m) + "<button type='button' data-i='" + i + "' aria-label='" + esc(m) + " 빼기'>×</button></span>").join("");
+  $("members").querySelectorAll("button").forEach(b => b.onclick = () => { st.members.splice(+b.dataset.i, 1); save(); renderMembers(); });
+}
+function addMember(){
+  $("memberIn").value.split(/[,·\s]+/).map(s => s.trim()).filter(Boolean).forEach(n => { if (!st.members.includes(n)) st.members.push(n); });
+  $("memberIn").value = ""; save(); renderMembers(); $("memberIn").focus();
+}
+$("addMember").onclick = addMember;
+$("memberIn").onkeydown = e => { if (e.key === "Enter" && !e.isComposing){ e.preventDefault(); addMember(); } };
+$("team").onchange = () => { st.team = $("team").value; save(); renderTeam(); };
+try {
+  const d = JSON.parse(localStorage.getItem("teamdiag") || "null");
+  if (d && d.f && d.f.f_role) $("remind").innerHTML = "<b>지난 조별활동 떠올리기</b>이 기기에 남은 지난 진단표의 '커뮤니케이션이 맡을 몫': " + esc(d.f.f_role) + "<br>이번 기획은 그 몫 안에서 목표를 세웁니다.";
+} catch(e){}
+
+// 2. 목표
+function composeGoal(){
+  const [who, what, when, much] = ["g_who","g_what","g_when","g_much"].map(val);
+  if (!who || !what) return "";
+  return [when, who + (much ? "의 " + much + "가" : "가"), what].filter(Boolean).join(" ").replace(/\s+/g, " ") + (/[.!?]$/.test(what) ? "" : ".");
+}
+TEXT_IDS.forEach(id => $(id).addEventListener("input", () => {
+  st.f[id] = $(id).value;
+  if (id === "goal") st.goalAuto = !$(id).value.trim();
+  if (id.startsWith("g_") && st.goalAuto){ st.f.goal = composeGoal(); $("goal").value = st.f.goal; }
+  save();
+}));
+$("checks").innerHTML = CHECKS.map((c, i) => "<label><input type='checkbox' data-i='" + i + "'>" + esc(c) + "</label>").join("");
+$("checks").querySelectorAll("input").forEach(x => x.onchange = () => { st.checks = [...$("checks").querySelectorAll("input")].filter(y => y.checked).map(y => +y.dataset.i); save(); });
+
+// 4. 이론
+function renderTheories(){
+  $("theorypick").innerHTML = D.theories.map(h => { const k = st.pick.indexOf(h.id);
+    return "<button type='button' data-id='" + h.id + "' class='" + (k >= 0 ? "on" : "") + "' aria-pressed='" + (k >= 0) + "'>" + (k >= 0 ? "<span class='n'>" + (k + 1) + "</span>" : "") + "<b>" + h.id + "</b><small>" + esc(h.name) + " · " + esc(h.level) + "</small></button>"; }).join("");
+  $("theorypick").querySelectorAll("button").forEach(b => b.onclick = () => {
+    const id = b.dataset.id, k = st.pick.indexOf(id);
+    if (k >= 0) st.pick.splice(k, 1);
+    else if (st.pick.length >= 2){ $("e4").textContent = "이론은 두 개만 고릅니다. 바꾸려면 고른 이론을 한 번 더 눌러 빼세요."; return; }
+    else st.pick.push(id);
+    $("e4").textContent = ""; save(); renderTheories();
+  });
+  $("tpanels").innerHTML = st.pick.map((id, k) => { const h = thOf(id), t = st.th[id] || {parts:{}, strategy:""};
+    return "<div class='tpanel'><h3>이론 " + (k + 1) + " · " + esc(h.id) + " " + esc(h.name) + "</h3><p class='core'>" + esc(h.core) + "</p>" +
+      h.parts.map((p, i) => "<div class='part'><label for='p_" + id + i + "'>" + esc(p[0]) + "<small>" + esc(p[1]) + "</small></label><input type='text' id='p_" + id + i + "' data-id='" + id + "' data-part='" + esc(p[0]) + "' placeholder='우리 수용자는?' value='" + esc((t.parts || {})[p[0]] || "") + "'></div>").join("") +
+      "<div class='strat'>강의 정리: " + esc(h.strategy) + "</div>" +
+      "<label for='s_" + id + "'>" + esc(h.id) + "가 가리키는 전략 <small>우리 수용자에게 무엇을, 어떻게</small></label><textarea id='s_" + id + "' data-id='" + id + "' style='min-height:70px'>" + esc(t.strategy || "") + "</textarea></div>"; }).join("");
+  $("tpanels").querySelectorAll("input[data-part]").forEach(x => x.oninput = () => { const t = st.th[x.dataset.id] = st.th[x.dataset.id] || {parts:{}, strategy:""}; t.parts[x.dataset.part] = x.value; save(); });
+  $("tpanels").querySelectorAll("textarea[data-id]").forEach(x => x.oninput = () => { const t = st.th[x.dataset.id] = st.th[x.dataset.id] || {parts:{}, strategy:""}; t.strategy = x.value; save(); });
+}
+
+// 5. 정리·제출
+function analysisOf(id){
+  const h = thOf(id), t = st.th[id] || {parts:{}};
+  return h.parts.map(p => [p[0], String((t.parts || {})[p[0]] || "").trim()]).filter(x => x[1]).map(x => x[0] + ": " + x[1]).join("\n");
+}
+function canvasRows(){
+  const q = qOf(st.team) || {}, th = k => st.pick[k] ? thOf(st.pick[k]) : null;
+  const rows = [["조별 이슈 (조별 논의를 통한 공통 주제)", val("issue")], ["커뮤니케이션 목표 (누가·무엇을·언제까지·얼마나)", val("goal")],
+    ["표적 수용자: 인구통계", val("aud_demo")], ["표적 수용자: 신념·현재 행동", val("aud_belief")], ["표적 수용자: 사회적·물리적 환경", val("aud_env")]];
+  [0, 1].forEach(k => { const h = th(k), s = h ? String((st.th[h.id] || {}).strategy || "").trim() : "";
+    rows.push(["선택 이론 " + (k + 1) + (k ? "와" : "과") + " 분석", h ? h.id + " " + h.name + "\n" + analysisOf(h.id) + (s ? "\n→ 전략: " + s : "") : ""]); });
+  rows.push(["두 이론이 가리키는 전략의 차이", val("diff")]);
+  return rows;
+}
+function renderSummary(){
+  $("compare").innerHTML = [0, 1].map(k => { const id = st.pick[k], h = id && thOf(id);
+    return "<div><b>" + (h ? esc(h.id + " " + h.name) : "이론 " + (k + 1) + " 미선택") + "</b>" + (h ? esc(String((st.th[id] || {}).strategy || "").trim() || "(전략 칸이 비어 있음)") : "") + "</div>"; }).join("");
+  renderCanvas();
+}
+function renderCanvas(){
+  $("canvas").innerHTML = canvasRows().map(r => "<tr><td>" + esc(r[0]) + "</td><td" + (r[1] ? "" : " class='missing'") + ">" + (r[1] ? esc(r[1]) : "아직 비어 있음") + "</td></tr>").join("");
+  $("fname").textContent = st.team ? fileName() : "";
+}
+$("diff").addEventListener("input", renderCanvas);
+function fileName(){ return (st.team + "_기획캔버스.csv").replace(/[\\/:*?"<>|\s]+/g, ""); }
+function firstGap(){ for (let i = 1; i <= 4; i++){ const m = CHECK[i](); if (m) return [i, m]; } return !val("diff") ? [5, "두 이론이 가리키는 전략의 차이를 적어 주세요."] : null; }
+function submitRows(){
+  const q = qOf(st.team) || {};
+  const head = [["양식", FORM_ID], ["조", st.team], ["문제 카드", q.no ? "Q" + q.no + " " + q.name : ""], ["조원", st.members.join(", ")]];
+  const goal = [["목표: 누가", val("g_who")], ["목표: 무엇을", val("g_what")], ["목표: 언제까지", val("g_when")], ["목표: 얼마나", val("g_much")], ["목표 점검", st.checks.map(i => CHECKS[i]).join("; ")]];
+  const th = st.pick.map((id, k) => [["이론 " + (k + 1), id], ["이론 " + (k + 1) + " 전략", String((st.th[id] || {}).strategy || "").trim()]]).flat();
+  return [["항목", "작성 내용"]].concat(head, canvasRows(), goal, th, [["작성 시각", new Date().toISOString()]]);
+}
+$("csv").onclick = () => {
+  const gap = firstGap();
+  if (gap){ $("e5").textContent = gap[1] + (gap[0] < 5 ? " (" + gap[0] + "단계)" : ""); return; }
+  $("e5").textContent = "";
+  const q = s => '"' + String(s ?? "").replace(/"/g, '""') + '"';
+  const blob = new Blob(["﻿" + submitRows().map(r => r.map(q).join(",")).join("\r\n")], {type: "text/csv"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = fileName(); a.click();
+  $("msg").textContent = "내려받았습니다. 다운로드 폴더의 " + fileName() + " 파일을 LMS에 올리세요.";
+};
+function canvasText(withNames){
+  const q = qOf(st.team) || {};
+  return "[기획 캔버스] " + st.team + " · Q" + q.no + " " + q.name + (withNames && st.members.length ? "\n조원: " + st.members.join(", ") : "") + "\n\n" +
+    canvasRows().map(r => "■ " + r[0] + "\n" + (r[1] || "(비어 있음)")).join("\n\n");
+}
+$("copytext").onclick = async () => {
+  const text = canvasText(true), box = $("copybox");
+  try { await navigator.clipboard.writeText(text); box.classList.add("hidden"); $("msg").textContent = "캔버스를 글로 복사했습니다. 단톡방이나 LMS 글쓰기 칸에 붙여 넣으세요."; }
+  catch(e){ box.value = text; box.classList.remove("hidden"); box.focus(); box.select(); $("msg").textContent = "자동 복사가 막혀 아래 칸을 선택해 두었습니다. Ctrl+C(휴대폰은 길게 눌러 복사)로 복사하세요."; }
+};
+$("reset").onclick = () => askConfirm("이 기기에 쓴 캔버스를 모두 지우고 처음부터 쓸까요?", "지우고 새로 쓰기", "취소", () => { const t = st.team; st = fresh(); st.team = t; save(); fill(); show(1); });
+function buildPrompt(){ return PROMPT_HEAD + canvasText(false); }
+document.querySelectorAll("#aipick a").forEach(a => a.addEventListener("click", () => {
+  const text = buildPrompt(), box = $("aistatus"); $("prompt").textContent = text;
+  document.querySelectorAll("#aipick a").forEach(x => x.classList.toggle("on", x === a));
+  box.classList.remove("hidden");
+  let p; try { p = navigator.clipboard.writeText(text); } catch(e){ p = Promise.reject(e); }
+  p.then(() => { box.textContent = "프롬프트를 복사했습니다. 새 탭에서 " + a.dataset.ai + "에 로그인한 뒤 붙여넣고(휴대폰은 길게 눌러 붙여넣기) 보내세요. 판정과 질문을 보고 캔버스를 고치면 됩니다."; })
+   .catch(() => { box.textContent = "자동 복사가 막혀 있습니다. 아래 '프롬프트 직접 보기'를 열어 전체를 선택해 복사하세요."; $("prompt").parentElement.open = true; });
+}));
+document.querySelector("details.ai").addEventListener("toggle", () => { $("prompt").textContent = buildPrompt(); });
+
+// 시작
+function fill(){
+  $("team").value = st.team;
+  TEXT_IDS.forEach(id => $(id).value = st.f[id] || "");
+  $("checks").querySelectorAll("input").forEach(x => x.checked = st.checks.includes(+x.dataset.i));
+  renderTeam(); renderMembers();
+}
+$("team").innerHTML = "<option value=''>우리 조를 고르세요</option>" + TEAMS.map(t => "<option>" + t + "</option>").join("");
+load();
+if (st.team && !TEAMS.includes(st.team)) st.team = "";
+const pTeam = new URLSearchParams(location.search).get("team") || "";
+const hasWork = () => st.members.length || TEXT_IDS.some(k => val(k)) || st.pick.length;
+if (TEAMS.includes(pTeam) && pTeam !== st.team){
+  if (st.team && hasWork()){
+    setTimeout(() => askConfirm("이 기기에 " + st.team + " 캔버스가 있습니다. " + pTeam + " 캔버스를 새로 쓸까요?", "새로 쓰기", "기존 캔버스 보기",
+      () => { st = fresh(); st.team = pTeam; save(); fill(); show(1); }), 0);
+  } else { st.team = pTeam; st.step = 1; save(); }
+}
+fill();
+show(st.team ? st.step || 1 : 1);
+</script>
+</body>
+</html>
