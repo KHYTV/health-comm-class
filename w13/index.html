@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>감기약 아세트아미노펜 체크</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* 한 줄 작업 칼럼: 1~4단계를 위에서 아래로, 결과는 의약품 표시사항처럼 표로 */
+:root{--green:#1f5145;--head:#1f5145;--gold:#b5781f;--mint:#e6efec;--beige:#f3e6cf;--ink:#1d2b27;--muted:#5d6f69;--line:#d5e0dc;--bg:#fbfaf6;--card:#ffffff;--field:#ffffff;--on:#ffffff;
+  --ok:#1f7a4d;--okbg:#e4f3ea;--warn:#9a5b00;--warnbg:#fdf1dc;--bad:#b3261e;--badbg:#fbe5e3;--mono:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--green:#2f7a66;--head:#9fd8c5;--gold:#e0a54e;--mint:#1f2e2a;--beige:#3a3123;--ink:#e3ece8;--muted:#9fb3ac;--line:#2f403b;--bg:#111816;--card:#18221f;--field:#1d2925;--on:#ffffff;
+  --ok:#6fd19d;--okbg:#16302a;--warn:#f0b85c;--warnbg:#33281a;--bad:#ff8a80;--badbg:#3a1e1c;color-scheme:dark}}
+:root[data-theme="dark"]{--green:#2f7a66;--head:#9fd8c5;--gold:#e0a54e;--mint:#1f2e2a;--beige:#3a3123;--ink:#e3ece8;--muted:#9fb3ac;--line:#2f403b;--bg:#111816;--card:#18221f;--field:#1d2925;--on:#ffffff;
+  --ok:#6fd19d;--okbg:#16302a;--warn:#f0b85c;--warnbg:#33281a;--bad:#ff8a80;--badbg:#3a1e1c;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans KR",system-ui,sans-serif;font-size:16px;line-height:1.55}
+.wrap{max-width:760px;margin:0 auto;padding:28px max(16px,env(safe-area-inset-right,0px)) 64px max(16px,env(safe-area-inset-left,0px));display:grid;gap:16px}
+.eyebrow{color:var(--gold);font-weight:700;font-size:13px}
+h1{color:var(--head);font-size:28px;margin:4px 0 6px;text-wrap:balance}
+.lead{color:var(--muted);margin:0;font-size:15px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px;display:grid;gap:12px;min-width:0}
+.sh{display:flex;gap:10px;align-items:baseline}
+.sh .n{font-family:var(--mono);font-size:13px;color:var(--on);background:var(--green);border-radius:4px;padding:0 7px}
+.sh h2{margin:0;font-size:18px;color:var(--head)}
+.hint{color:var(--muted);font-size:14px;margin:0}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:560px){.g3{grid-template-columns:1fr}}
+label{display:grid;gap:4px;font-size:13px;color:var(--muted);font-weight:500}
+input[type=text],input[type=number],input[type=password],textarea,select{font:inherit;font-size:15px;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;min-width:0}
+textarea{resize:vertical;min-height:64px}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.btn{border:1px solid var(--green);border-radius:8px;padding:9px 16px;font:inherit;font-weight:700;cursor:pointer;background:var(--green);color:var(--on)}
+.btn.ghost{background:transparent;color:var(--head);border-color:var(--head)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.med{border:1px solid var(--line);border-radius:8px;padding:14px;display:grid;gap:10px}
+.mtop{display:grid;grid-template-columns:132px minmax(0,1fr);gap:14px}
+@media (max-width:560px){.mtop{grid-template-columns:1fr}.photo{width:160px}}
+.photo{aspect-ratio:3/4;max-width:100%;border:1.5px dashed var(--line);border-radius:6px;display:grid;place-items:center;text-align:center;color:var(--muted);font-size:13px;overflow:hidden;position:relative;background:var(--mint);cursor:pointer}
+.photo img{width:100%;height:100%;object-fit:cover}
+.photo input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.mt{display:flex;justify-content:space-between;align-items:center}
+.mt strong{color:var(--head)}
+.st{font-size:13px;color:var(--muted)} .st.err{color:var(--bad)}
+.checks{display:flex;gap:16px;flex-wrap:wrap;font-size:14px}
+.checks label{display:flex;gap:6px;align-items:center;color:var(--ink)}
+.link{background:none;border:none;color:var(--muted);font:inherit;font-size:13px;cursor:pointer;text-decoration:underline;padding:0}
+.facts{border:2px solid var(--ink);border-radius:4px;padding:10px 12px}
+.facts h3{margin:0 0 6px;font-size:18px;border-bottom:6px solid var(--ink);padding-bottom:4px}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted)}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.bar{height:8px;background:var(--mint);border-radius:4px;overflow:hidden;margin-top:4px;min-width:80px}
+.bar i{display:block;height:100%;background:var(--ok)} .bar i.warn{background:var(--warn)} .bar i.bad{background:var(--bad)}
+.pill{display:inline-block;font-size:12px;font-weight:700;padding:1px 8px;border-radius:999px;white-space:nowrap}
+.pill.ok{color:var(--ok);background:var(--okbg)} .pill.warn{color:var(--warn);background:var(--warnbg)} .pill.bad{color:var(--bad);background:var(--badbg)}
+.notes{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.notes li{padding:8px 10px;border-radius:6px;font-size:14px;border-left:4px solid}
+.notes .ok{background:var(--okbg);border-color:var(--ok)} .notes .warn{background:var(--warnbg);border-color:var(--warn)}
+.notes .bad{background:var(--badbg);border-color:var(--bad)} .notes .info{background:var(--mint);border-color:var(--green)}
+.banner{padding:10px 12px;border-radius:6px;font-size:14px;background:var(--mint)}
+.banner.ok{background:var(--okbg);color:var(--ok);font-weight:700} .banner.bad{background:var(--badbg);color:var(--bad)}
+.cnt{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.basis{font-size:12px;color:var(--muted);margin:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">헬스커뮤니케이션 4주차 · 11/25 개인활동</div>
+    <h1>감기약 아세트아미노펜 체크</h1>
+    <p class="lead">아세트아미노펜이 든 감기약 2종 이상의 함량 표시 부분을 찍어 올리면, 함량이 적절한지와 주의할 점을 알려 줍니다. 결과를 보고 한 줄 평을 남겨 제출하세요. 약을 새로 사거나 먹을 필요는 없습니다.</p>
+  </header>
+
+  <div id="env" class="banner" hidden></div>
+
+  <section class="panel">
+    <div class="sh"><span class="n">1</span><h2>학생 정보</h2></div>
+    <div class="g3">
+      <label for="sid">학번<input type="text" id="sid" inputmode="numeric" autocomplete="off" placeholder="예: 202612345"></label>
+      <label for="dept">학과<input type="text" id="dept" autocomplete="off" placeholder="예: 신문방송학과"></label>
+      <label for="sname">이름<input type="text" id="sname" autocomplete="off" placeholder="예: 홍길동"></label>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="sh"><span class="n">2</span><h2>감기약 사진 (2종 이상)</h2></div>
+    <p class="hint">포장이나 설명서에서 <b>성분·함량</b>과 <b>용법·용량</b>이 보이게 찍으세요. '사진에서 함량 읽기'는 글자를 자동으로 읽어 칸을 채웁니다. 읽은 값은 꼭 포장과 대조해 고치세요.</p>
+    <div id="meds" style="display:grid;gap:12px"></div>
+    <div class="row"><button type="button" class="btn ghost" id="addMed">+ 감기약 추가</button></div>
+  </section>
+
+  <section class="panel">
+    <div class="sh"><span class="n">3</span><h2>주의 결과 보기</h2></div>
+    <div class="row"><button type="button" class="btn" id="evalBtn" disabled>결과 보기</button><span class="hint" id="evalHint"></span></div>
+    <div id="result" hidden></div>
+  </section>
+
+  <section class="panel">
+    <div class="sh"><span class="n">4</span><h2>한 줄 평 쓰고 제출</h2></div>
+    <p class="hint">제품들의 함량이 얼마나 적당한지 비교해 한 줄로 평가하세요. 예: "A는 1회 1,000mg으로 단일제 수준, B는 300mg이라 함께 먹으면 하루 기준을 넘는다"</p>
+    <label for="comment">한 줄 평 <span class="cnt" id="cnt">0 / 100</span><textarea id="comment" maxlength="100" disabled placeholder="결과를 먼저 확인하세요"></textarea></label>
+    <div class="row">
+      <button type="button" class="btn" id="submitBtn" disabled>제출</button>
+      <button type="button" class="btn ghost" id="fileBtn" disabled>제출 파일 내려받기 (LMS용)</button>
+    </div>
+    <div id="msg" class="banner" hidden></div>
+  </section>
+
+  <section class="panel">
+    <div class="sh"><h2>평가 기준</h2></div>
+    <ul class="notes">
+      <li class="info">1일 최대 <b>4,000mg</b>: 넘으면 간손상 위험 (식약처 아세트아미노펜 허가사항 경고)</li>
+      <li class="info">1회 <b>1,000mg</b> 이하가 성인 일반 기준 (500mg 정제 1회 최대 2정). 8시간 지속형(서방정)은 1회 1,300mg까지</li>
+      <li class="info">아세트아미노펜이 든 다른 약(종합감기약 + 해열진통제 등)과 <b>함께 먹지 않기</b></li>
+      <li class="info">정기적으로 술을 마시는 사람은 먹기 전에 의사·약사와 상의. 어린이 용량은 연령·체중표를 따름</li>
+    </ul>
+    <p class="basis">수업용 학습 도구이며 개인의 복용 지도를 대신하지 않습니다. 실제 복용은 제품 설명서와 약사 안내를 따르세요. 사진의 글자 읽기는 브라우저 안에서만 처리되고, 제출한 사진은 교수자만 봅니다.</p>
+  </section>
+</div>
+
+<script src="config.js"></script>
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const ENDPOINT = (window.APAP_ENDPOINT || '').trim();
+  const LIMIT_DAY = 4000, LIMIT_DOSE = 1000, LIMIT_DOSE_ER = 1300;
+  const UNITS = ['정', '캡슐', '포', 'mL', '병'];
+  const st = { meds: [], ev: null };
+  let seq = 0;
+
+  const newMed = () => ({ key: ++seq, data: '', name: '', mgPerUnit: '', unit: '정', unitsPerDose: '', timesPerDay: '', er: false, pediatric: false, others: '', st: '', err: false });
+  const done = m => m.data && m.mgPerUnit > 0 && m.unitsPerDose > 0 && m.timesPerDay > 0;
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const fmt = n => Math.round(n).toLocaleString('ko-KR');
+
+  function render() {
+    const box = $('#meds'); box.textContent = '';
+    st.meds.forEach((m, i) => {
+      const L = String.fromCharCode(65 + i);
+      const el = document.createElement('div'); el.className = 'med';
+      el.innerHTML = `<div class="mt"><strong>제품 ${L}</strong>${st.meds.length > 2 ? '<button type="button" class="link" data-a="del">삭제</button>' : ''}</div>
+        <div class="mtop">
+          <label class="photo" for="f${m.key}">${m.data ? `<img alt="제품 ${L} 사진" src="${m.data}">` : '사진 찍기<br>또는 올리기'}<input type="file" id="f${m.key}" accept="image/*" capture="environment"></label>
+          <div style="display:grid;gap:10px;min-width:0">
+            <div class="row"><button type="button" class="btn ghost" data-a="ocr" ${m.data ? '' : 'hidden'}>사진에서 함량 읽기</button><span class="st ${m.err ? 'err' : ''}">${esc(m.st)}</span></div>
+            <label for="n${m.key}">제품명<input type="text" id="n${m.key}" data-f="name" placeholder="예: OO콜드정"></label>
+            <div class="g3">
+              <label for="m${m.key}">아세트아미노펜 (mg)<input type="number" min="0" step="1" id="m${m.key}" data-f="mgPerUnit" placeholder="1단위당"></label>
+              <label for="u${m.key}">단위<select id="u${m.key}" data-f="unit">${UNITS.map(u => `<option${u === m.unit ? ' selected' : ''}>${u}</option>`).join('')}</select></label>
+              <label for="d${m.key}">1회 복용량 (단위 수)<input type="number" min="0" step="0.5" id="d${m.key}" data-f="unitsPerDose" placeholder="성인, 최대값"></label>
+            </div>
+            <div class="g3">
+              <label for="t${m.key}">1일 최대 횟수<input type="number" min="0" step="1" id="t${m.key}" data-f="timesPerDay" placeholder="예: 3"></label>
+              <label for="o${m.key}" style="grid-column:span 2">다른 성분 (쉼표로)<input type="text" id="o${m.key}" data-f="others" placeholder="예: 클로르페니라민, 카페인"></label>
+            </div>
+            <div class="checks"><label><input type="checkbox" data-f="er"> 8시간 지속형(서방정)</label><label><input type="checkbox" data-f="pediatric"> 어린이용</label></div>
+          </div></div>`;
+      el.querySelectorAll('[data-f]').forEach(inp => {
+        const f = inp.dataset.f;
+        if (inp.type === 'checkbox') inp.checked = !!m[f]; else inp.value = m[f] ?? '';
+        inp.addEventListener(inp.type === 'checkbox' || inp.tagName === 'SELECT' ? 'change' : 'input', () => {
+          m[f] = inp.type === 'checkbox' ? inp.checked : inp.type === 'number' ? (inp.value === '' ? '' : Number(inp.value)) : inp.value;
+          invalidate();
+        });
+      });
+      el.querySelector('input[type=file]').addEventListener('change', async e => {
+        const file = e.target.files && e.target.files[0]; if (!file) return;
+        try { m.data = await shrink(file); m.st = "'사진에서 함량 읽기'를 누르거나 직접 입력하세요."; m.err = false; }
+        catch { m.st = '이 사진을 열 수 없습니다. JPG나 PNG로 다시 올려 주세요.'; m.err = true; }
+        render(); invalidate();
+      });
+      const del = el.querySelector('[data-a=del]'); if (del) del.onclick = () => { st.meds.splice(i, 1); render(); invalidate(); };
+      el.querySelector('[data-a=ocr]').onclick = () => ocr(m);
+      box.appendChild(el);
+    });
+  }
+
+  function shrink(file) {
+    return new Promise((res, rej) => {
+      const img = new Image(), url = URL.createObjectURL(file);
+      img.onload = () => {
+        const s = Math.min(1, 1400 / Math.max(img.width, img.height));
+        const c = document.createElement('canvas'); c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+        res(c.toDataURL('image/jpeg', 0.82));
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('img')); };
+      img.src = url;
+    });
+  }
+
+  // ---- 글자 읽기 (Tesseract.js, 브라우저 안에서 처리) ----
+  let workerP = null;
+  function loadOCR() {
+    if (workerP) return workerP;
+    workerP = new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+      s.onload = () => window.Tesseract.createWorker('kor+eng').then(res, rej);
+      s.onerror = rej; document.head.appendChild(s);
+    }).catch(e => { workerP = null; throw e; });
+    return workerP;
+  }
+  function parseLabel(raw) {
+    const t = raw.replace(/\s+/g, ' ').replace(/[，]/g, ',');
+    const r = {};
+    const mg = t.match(/아세트\s*아미\s*노펜[^0-9]{0,25}?([0-9][0-9.,]{1,6})\s*(mg|밀리그램|㎎)/i);
+    if (mg) r.mg = Number(mg[1].replace(/,/g, ''));
+    const dose = t.match(/1\s*회\s*([0-9.]+)\s*(?:[~∼\-]\s*([0-9.]+)\s*)?(정|캡슐|포|mL|ml|병)/);
+    if (dose) { r.units = Number(dose[2] || dose[1]); r.unit = dose[3].replace('ml', 'mL'); }
+    const tpd = t.match(/1\s*일\s*([0-9]+)\s*(?:[~∼\-]\s*([0-9]+)\s*)?회/);
+    if (tpd) r.times = Number(tpd[2] || tpd[1]);
+    if (/서방|8\s*시간/.test(t)) r.er = true;
+    if (/어린이|소아|키즈/.test(t)) r.ped = true;
+    return r;
+  }
+  async function ocr(m) {
+    m.st = '글자 읽기 도구를 불러오는 중… (처음 한 번은 1분 정도 걸릴 수 있음)'; m.err = false; render();
+    try {
+      const w = await loadOCR();
+      m.st = '사진의 글자를 읽는 중…'; render();
+      const { data } = await w.recognize(m.data);
+      const r = parseLabel(data.text || '');
+      let got = 0;
+      if (r.mg > 0 && r.mg < 3000) { m.mgPerUnit = r.mg; got++; }
+      if (r.units > 0 && r.units < 10) { m.unitsPerDose = r.units; got++; }
+      if (r.unit) m.unit = r.unit;
+      if (r.times > 0 && r.times < 10) { m.timesPerDay = r.times; got++; }
+      if (r.er) m.er = true; if (r.ped) m.pediatric = true;
+      m.err = !r.mg;
+      m.st = r.mg ? `읽은 값 ${got}개를 채웠습니다. 포장과 대조해 틀리거나 빈 칸을 직접 고치세요.` : '아세트아미노펜 함량을 찾지 못했습니다. 성분표를 가까이, 밝게 다시 찍거나 직접 입력하세요.';
+    } catch { m.st = '글자 읽기를 쓸 수 없습니다. 값을 직접 입력하세요.'; m.err = true; }
+    render(); invalidate();
+  }
+
+  // ---- 고정된 평가 규칙 ----
+  function evaluate(meds) {
+    const rows = meds.map((m, i) => {
+      const dose = m.mgPerUnit * m.unitsPerDose, day = dose * m.timesPerDay, lim = m.er ? LIMIT_DOSE_ER : LIMIT_DOSE;
+      const doseLv = dose > lim ? 'bad' : 'ok';
+      const dayLv = day > LIMIT_DAY ? 'bad' : day > LIMIT_DAY * 0.75 ? 'warn' : 'ok';
+      const level = [doseLv, dayLv].includes('bad') ? 'bad' : [doseLv, dayLv].includes('warn') ? 'warn' : 'ok';
+      const L = String.fromCharCode(65 + i);
+      return { letter: L, name: m.name || '제품 ' + L, dose, day, lim, doseLv, dayLv, level, levelLabel: { ok: '기준 안', warn: '여유 적음', bad: '초과' }[level], pct: Math.round(day / LIMIT_DAY * 100), er: !!m.er, pediatric: !!m.pediatric };
+    });
+    const notes = [];
+    rows.forEach(r => {
+      if (r.pediatric) notes.push(['info', `${r.letter} ${r.name}: 어린이용입니다. 어린이 용량은 연령·체중표를 따르므로 성인 기준 평가는 참고만 하세요.`]);
+      if (r.doseLv === 'bad') notes.push(['bad', `${r.letter} ${r.name}: 1회 ${fmt(r.dose)}mg으로 1회 기준(${fmt(r.lim)}mg)을 넘습니다. 입력값을 포장과 다시 대조하세요.`]);
+      if (r.dayLv === 'bad') notes.push(['bad', `${r.letter} ${r.name}: 용법대로 하루 최대 먹으면 ${fmt(r.day)}mg으로 1일 최대 4,000mg을 넘습니다.`]);
+      else if (r.dayLv === 'warn') notes.push(['warn', `${r.letter} ${r.name}: 하루 최대 ${fmt(r.day)}mg(4,000mg의 ${r.pct}%)로 단독으로도 여유가 적습니다. 다른 아세트아미노펜 약을 더하면 바로 넘을 수 있습니다.`]);
+      else notes.push(['ok', `${r.letter} ${r.name}: 1회 ${fmt(r.dose)}mg, 하루 최대 ${fmt(r.day)}mg(4,000mg의 ${r.pct}%) — 용법대로 단독 복용하면 기준 안입니다.`]);
+    });
+    const sumDay = rows.reduce((a, r) => a + r.day, 0);
+    notes.push([sumDay > LIMIT_DAY ? 'bad' : 'warn', `중복 주의: ${rows.map(r => r.letter).join('·')} 모두 아세트아미노펜이 들어 있습니다. 같은 날 함께 먹으면 하루 최대 합계 ${fmt(sumDay)}mg${sumDay > LIMIT_DAY ? '으로 4,000mg을 넘습니다' : '이 됩니다'}. 함께 먹지 마세요.`]);
+    const by = [...rows].sort((a, b) => b.dose - a.dose), hi = by[0], lo = by[by.length - 1];
+    if (lo.dose > 0 && hi.dose !== lo.dose) notes.push(['info', `1회 함량 비교: ${hi.letter}(${fmt(hi.dose)}mg)가 ${lo.letter}(${fmt(lo.dose)}mg)의 ${(hi.dose / lo.dose).toFixed(1)}배입니다. 같은 '감기약'이어도 함량 차이가 큽니다.`]);
+    notes.push(['info', '정기적으로 술을 마시는 사람은 아세트아미노펜을 먹기 전에 의사·약사와 상의하세요.']);
+    return { rows, notes, sumDay };
+  }
+  function showResult(ev) {
+    const box = $('#result'); box.hidden = false;
+    const sumLv = ev.sumDay > LIMIT_DAY ? 'bad' : 'warn';
+    box.innerHTML = `<div class="facts"><h3>아세트아미노펜 함량 비교</h3><div class="tw"><table>
+      <thead><tr><th>제품</th><th>1회</th><th>하루 최대 (용법대로)</th><th>판정</th></tr></thead><tbody>
+      ${ev.rows.map(r => `<tr><td><b>${r.letter}</b> ${esc(r.name)}${r.er ? ' <span class="pill ok">서방정</span>' : ''}${r.pediatric ? ' <span class="pill warn">어린이용</span>' : ''}</td>
+        <td class="num">${fmt(r.dose)}mg</td><td class="num">${fmt(r.day)}mg · ${r.pct}%<div class="bar"><i class="${r.dayLv === 'ok' ? '' : r.dayLv}" style="width:${Math.min(100, r.pct)}%"></i></div></td>
+        <td><span class="pill ${r.level}">${r.levelLabel}</span></td></tr>`).join('')}
+      <tr><td><b>함께 먹으면</b></td><td></td><td class="num">${fmt(ev.sumDay)}mg · ${Math.round(ev.sumDay / LIMIT_DAY * 100)}%<div class="bar"><i class="${sumLv}" style="width:${Math.min(100, ev.sumDay / LIMIT_DAY * 100)}%"></i></div></td>
+        <td><span class="pill ${sumLv}">${sumLv === 'bad' ? '초과' : '중복 주의'}</span></td></tr></tbody></table></div></div>
+      <ul class="notes" style="margin-top:12px">${ev.notes.map(([c, t]) => `<li class="${c}">${esc(t)}</li>`).join('')}</ul>`;
+  }
+
+  function invalidate() {
+    st.ev = null; $('#result').hidden = true;
+    const ready = st.meds.length >= 2 && st.meds.every(done);
+    $('#evalBtn').disabled = !ready;
+    $('#evalHint').textContent = ready ? '입력한 값으로 함량을 비교합니다.' : '모든 제품에 사진과 함량·1회 복용량·1일 횟수를 채우면 결과를 볼 수 있습니다.';
+    $('#comment').disabled = true; $('#comment').placeholder = '결과를 먼저 확인하세요';
+    gate();
+  }
+  const infoOK = () => $('#sid').value.trim() && $('#dept').value.trim() && $('#sname').value.trim();
+  function gate() {
+    const ok = !!(infoOK() && st.ev && $('#comment').value.trim().length >= 5);
+    $('#submitBtn').disabled = !ok || !ENDPOINT;
+    $('#fileBtn').disabled = !ok;
+  }
+  $('#evalBtn').onclick = () => { st.ev = evaluate(st.meds); showResult(st.ev); $('#comment').disabled = false; $('#comment').placeholder = '제품들의 함량을 비교해 한 줄로 평가하세요'; gate(); };
+  $('#comment').oninput = () => { $('#cnt').textContent = `${$('#comment').value.length} / 100`; gate(); };
+  ['#sid', '#dept', '#sname'].forEach(s => $(s).addEventListener('input', gate));
+  $('#addMed').onclick = () => { st.meds.push(newMed()); render(); invalidate(); };
+
+  function payload() {
+    return {
+      action: 'submit', studentNo: $('#sid').value.trim(), dept: $('#dept').value.trim(), name: $('#sname').value.trim(),
+      comment: $('#comment').value.trim(),
+      products: st.meds.map(m => ({ name: m.name, mgPerUnit: m.mgPerUnit, unit: m.unit, unitsPerDose: m.unitsPerDose, timesPerDay: m.timesPerDay, er: !!m.er, pediatric: !!m.pediatric, others: m.others })),
+      result: { rows: st.ev.rows.map(r => ({ letter: r.letter, name: r.name, dose: r.dose, day: r.day, pct: r.pct, level: r.level, levelLabel: r.levelLabel })), sumDay: st.ev.sumDay },
+      photos: st.meds.map(m => ({ data: m.data }))
+    };
+  }
+  const msg = (t, c) => { const b = $('#msg'); b.hidden = false; b.className = 'banner' + (c ? ' ' + c : ''); b.textContent = t; };
+
+  $('#submitBtn').onclick = async () => {
+    $('#submitBtn').disabled = true; msg('제출하는 중… (사진 업로드로 10~30초 걸릴 수 있음)');
+    try {
+      const r = await fetch(ENDPOINT, { method: 'POST', body: JSON.stringify(payload()) });
+      const j = await r.json();
+      if (!j.ok) throw new Error(j.error || 'fail');
+      msg(`제출했습니다 (사진 ${j.photos}장 저장). 다시 제출하면 새 제출로 기록되고, 교수자는 마지막 제출을 봅니다.`, 'ok');
+    } catch { msg('제출하지 못했습니다. 잠시 후 다시 누르거나, "제출 파일 내려받기"로 LMS에 올려 주세요.', 'bad'); }
+    gate();
+  };
+  $('#fileBtn').onclick = () => {
+    const p = payload(), q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+    const lines = [['학번', '학과', '이름', '제품', '아세트아미노펜(mg/단위)', '1회 복용량', '1일 횟수', '1회(mg)', '하루 최대(mg)', '판정', '함께 먹으면(mg)', '한 줄 평'].map(q).join(',')];
+    p.result.rows.forEach((r, i) => { const m = p.products[i]; lines.push([p.studentNo, p.dept, p.name, `${r.letter} ${r.name}`, m.mgPerUnit, `${m.unitsPerDose}${m.unit}`, m.timesPerDay, Math.round(r.dose), Math.round(r.day), r.levelLabel, Math.round(p.result.sumDay), p.comment].map(q).join(',')); });
+    const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${p.studentNo}_${p.name}_아세트아미노펜.csv`; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    msg('제출 파일을 내려받았습니다. LMS 과제란에 이 파일과 사진을 함께 올리세요.', 'ok');
+  };
+
+  st.meds = [newMed(), newMed()]; render(); invalidate();
+  if (!ENDPOINT) { const e = $('#env'); e.hidden = false; e.textContent = '지금은 바로 제출이 열려 있지 않습니다. 결과까지 확인한 뒤 "제출 파일 내려받기"로 LMS에 올리고 사진도 함께 올리세요.'; }
+})();
+</script>
+</body>
+</html>

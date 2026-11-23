@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>아세트아미노펜 체크 관리자</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{--green:#1f5145;--head:#1f5145;--gold:#b5781f;--mint:#e6efec;--ink:#1d2b27;--muted:#5d6f69;--line:#d5e0dc;--bg:#fbfaf6;--card:#ffffff;--field:#ffffff;--on:#ffffff;--bad:#b3261e;--badbg:#fbe5e3;--okbg:#e4f3ea;--ok:#1f7a4d;--mono:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--green:#2f7a66;--head:#9fd8c5;--gold:#e0a54e;--mint:#1f2e2a;--ink:#e3ece8;--muted:#9fb3ac;--line:#2f403b;--bg:#111816;--card:#18221f;--field:#1d2925;--bad:#ff8a80;--badbg:#3a1e1c;--okbg:#16302a;--ok:#6fd19d;color-scheme:dark}}
+:root[data-theme="dark"]{--green:#2f7a66;--head:#9fd8c5;--gold:#e0a54e;--mint:#1f2e2a;--ink:#e3ece8;--muted:#9fb3ac;--line:#2f403b;--bg:#111816;--card:#18221f;--field:#1d2925;--bad:#ff8a80;--badbg:#3a1e1c;--okbg:#16302a;--ok:#6fd19d;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans KR",system-ui,sans-serif;font-size:15px;line-height:1.55}
+.wrap{max-width:1100px;margin:0 auto;padding:28px max(16px,env(safe-area-inset-right,0px)) 64px max(16px,env(safe-area-inset-left,0px));display:grid;gap:16px}
+.eyebrow{color:var(--gold);font-weight:700;font-size:13px}
+h1{color:var(--head);font-size:26px;margin:4px 0 0}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px;display:grid;gap:12px;min-width:0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+input{font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:6px;padding:8px 10px;min-width:0}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.btn{border:1px solid var(--green);border-radius:8px;padding:9px 16px;font:inherit;font-weight:700;cursor:pointer;background:var(--green);color:var(--on)}
+.btn.ghost{background:transparent;color:var(--head);border-color:var(--head)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.banner{padding:10px 12px;border-radius:6px;font-size:14px;background:var(--mint)}
+.banner.bad{background:var(--badbg);color:var(--bad)} .banner.ok{background:var(--okbg);color:var(--ok)}
+.stats{display:flex;gap:18px;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+.stats b{font-family:var(--mono);font-size:20px;color:var(--head);margin-right:4px}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted);white-space:nowrap}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+td.pre{white-space:pre-line;min-width:240px}
+a{color:var(--head)}
+label.chk{display:flex;gap:6px;align-items:center;font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">관리자 모드</div>
+    <h1>아세트아미노펜 체크 제출 현황</h1>
+  </header>
+
+  <section class="panel">
+    <div class="row">
+      <label for="key" style="font-size:14px;color:var(--muted)">관리자 비밀번호</label>
+      <input type="password" id="key" autocomplete="current-password" placeholder="Apps Script의 ADMIN_KEY">
+      <button type="button" class="btn" id="load">불러오기</button>
+      <button type="button" class="btn ghost" id="xlsx" disabled>엑셀 파일 내려받기</button>
+    </div>
+    <label class="chk"><input type="checkbox" id="latest" checked> 학번별 마지막 제출만 보기</label>
+    <div id="msg" class="banner" hidden></div>
+  </section>
+
+  <section class="panel" id="view" hidden>
+    <div class="stats" id="stats"></div>
+    <div class="tw"><table><thead><tr><th>제출시각</th><th>학번</th><th>학과</th><th>이름</th><th>제품 요약</th><th>함께 먹으면</th><th>한 줄 평</th><th>사진</th></tr></thead><tbody id="tb"></tbody></table></div>
+  </section>
+</div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const ENDPOINT = (window.APAP_ENDPOINT || '').trim();
+  let all = [];
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const msg = (t, c) => { const b = $('#msg'); b.hidden = false; b.className = 'banner' + (c ? ' ' + c : ''); b.textContent = t; };
+  try { $('#key').value = sessionStorage.getItem('apapKey') || ''; } catch {}
+  if (!ENDPOINT) msg('w13/config.js에 Apps Script 웹 앱 주소(APAP_ENDPOINT)가 아직 없습니다. 주소를 넣은 뒤 다시 열어 주세요.', 'bad');
+
+  function latestOnly(rows) {
+    const m = new Map();
+    rows.forEach(r => { const k = String(r['학번']).trim(); if (!m.has(k) || String(r['제출시각']) > String(m.get(k)['제출시각'])) m.set(k, r); });
+    return [...m.values()];
+  }
+  function shown() {
+    const rows = $('#latest').checked ? latestOnly(all) : all.slice();
+    return rows.sort((a, b) => String(b['제출시각']).localeCompare(String(a['제출시각'])));
+  }
+  function render() {
+    const rows = shown();
+    $('#view').hidden = false;
+    const n = latestOnly(all).length;
+    $('#stats').innerHTML = `<span><b>${n}</b>명 제출</span><span><b>${all.length}</b>건 (재제출 포함)</span>`;
+    $('#tb').innerHTML = rows.length ? rows.map(r => `<tr><td class="num">${esc(r['제출시각'])}</td><td class="num">${esc(r['학번'])}</td><td>${esc(r['학과'])}</td><td>${esc(r['이름'])}</td>
+      <td class="pre">${esc(r['제품 요약'])}</td><td class="num">${esc(Number(r['함께 먹으면 하루 최대(mg)'] || 0).toLocaleString('ko-KR'))}mg</td><td>${esc(r['한 줄 평'])}</td>
+      <td>${String(r['사진 링크'] || '').split('\n').filter(Boolean).map((u, i) => `<a href="${esc(u)}" target="_blank" rel="noopener">사진${i + 1}</a>`).join(' ')}</td></tr>`).join('')
+      : '<tr><td colspan="8" style="color:var(--muted)">아직 제출이 없습니다.</td></tr>';
+  }
+
+  $('#load').onclick = async () => {
+    const key = $('#key').value.trim(); if (!key || !ENDPOINT) return;
+    $('#load').disabled = true; msg('불러오는 중…');
+    try {
+      const r = await fetch(ENDPOINT + '?action=list&key=' + encodeURIComponent(key));
+      const j = await r.json();
+      if (!j.ok) throw new Error(j.error);
+      all = j.rows || [];
+      try { sessionStorage.setItem('apapKey', key); } catch {}
+      msg(`불러왔습니다 (${new Date().toLocaleTimeString('ko-KR')}).`, 'ok');
+      $('#xlsx').disabled = !window.XLSX; render();
+    } catch (e) {
+      msg(String(e.message) === 'unauthorized' ? '비밀번호가 맞지 않습니다.' : '불러오지 못했습니다. 웹 앱 주소와 배포 설정(액세스: 모든 사용자)을 확인하세요.', 'bad');
+    }
+    $('#load').disabled = false;
+  };
+  $('#latest').onchange = () => { if (all.length) render(); };
+
+  $('#xlsx').onclick = () => {
+    const prodRows = [];
+    const flat = rows => rows.map(r => ({ '제출시각': r['제출시각'], '학번': r['학번'], '학과': r['학과'], '이름': r['이름'], '제품 수': Number(r['제품 수']) || '', '제품 요약': r['제품 요약'], '함께 먹으면 하루 최대(mg)': Number(r['함께 먹으면 하루 최대(mg)']) || 0, '한 줄 평': r['한 줄 평'], '사진 링크': r['사진 링크'] }));
+    latestOnly(all).forEach(r => {
+      let raw = {}; try { raw = JSON.parse(r['원자료(JSON)'] || '{}'); } catch {}
+      (raw.result?.rows || []).forEach((x, i) => { const p = (raw.products || [])[i] || {};
+        prodRows.push({ '학번': r['학번'], '이름': r['이름'], '제품': `${x.letter} ${x.name}`, '아세트아미노펜(mg/단위)': p.mgPerUnit, '단위': p.unit, '1회 복용량': p.unitsPerDose, '1일 횟수': p.timesPerDay, '서방정': p.er ? 'Y' : '', '어린이용': p.pediatric ? 'Y' : '', '다른 성분': p.others || '', '1회(mg)': Math.round(x.dose), '하루 최대(mg)': Math.round(x.day), '4,000mg 대비(%)': x.pct, '판정': x.levelLabel }); });
+    });
+    const wb = XLSX.utils.book_new();
+    const add = (name, data) => { const ws = XLSX.utils.json_to_sheet(data.length ? data : [{ '내용': '없음' }]); XLSX.utils.book_append_sheet(wb, ws, name); };
+    add('학생별 최종', flat(latestOnly(all)));
+    add('제품별 상세', prodRows);
+    add('전체 제출기록', flat(all));
+    const d = new Date(), ymd = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
+    XLSX.writeFile(wb, `아세트아미노펜_개인활동_제출_${ymd}.xlsx`);
+  };
+})();
+</script>
+</body>
+</html>
