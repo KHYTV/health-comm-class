@@ -37,10 +37,16 @@ textarea{resize:vertical;min-height:64px}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .med{border:1px solid var(--line);border-radius:8px;padding:14px;display:grid;gap:10px}
 .mtop{display:grid;grid-template-columns:132px minmax(0,1fr);gap:14px}
-@media (max-width:560px){.mtop{grid-template-columns:1fr}.photo{width:160px}}
-.photo{aspect-ratio:3/4;max-width:100%;border:1.5px dashed var(--line);border-radius:6px;display:grid;place-items:center;text-align:center;color:var(--muted);font-size:13px;overflow:hidden;position:relative;background:var(--mint);cursor:pointer}
+@media (max-width:560px){.mtop{grid-template-columns:1fr}.pcol{grid-template-columns:120px minmax(0,1fr);align-items:start}}
+.pcol{display:grid;gap:8px;align-content:start}
+.photo{aspect-ratio:3/4;max-width:100%;border:1.5px dashed var(--line);border-radius:6px;display:grid;place-items:center;text-align:center;color:var(--muted);font-size:13px;overflow:hidden;background:var(--mint)}
+.photo.drag{border-color:var(--gold);background:var(--beige)}
 .photo img{width:100%;height:100%;object-fit:cover}
-.photo input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.pbtns{display:grid;gap:6px}
+.pbtn{position:relative;display:block;text-align:center;border:1px solid var(--head);color:var(--head);background:var(--card);border-radius:6px;padding:7px 6px;font-size:13px;font-weight:700;cursor:pointer}
+.pbtn.main{background:var(--green);border-color:var(--green);color:var(--on)}
+.pbtn input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.pbtn:focus-within{outline:2px solid var(--gold);outline-offset:2px}
 .mt{display:flex;justify-content:space-between;align-items:center}
 .mt strong{color:var(--head)}
 .st{font-size:13px;color:var(--muted)} .st.err{color:var(--bad)}
@@ -89,7 +95,7 @@ td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:now
 
   <section class="panel">
     <div class="sh"><span class="n">2</span><h2>감기약 사진 (2종 이상)</h2></div>
-    <p class="hint">포장이나 설명서에서 <b>성분·함량</b>과 <b>용법·용량</b>이 보이게 찍으세요. '사진에서 함량 읽기'는 글자를 자동으로 읽어 칸을 채웁니다. 읽은 값은 꼭 포장과 대조해 고치세요.</p>
+    <p class="hint">포장이나 설명서에서 <b>성분·함량</b>과 <b>용법·용량</b>이 보이게 찍거나, 이미 찍어 둔 사진 파일을 올리세요 (컴퓨터에서는 사진 칸에 끌어다 놓아도 됩니다). '사진에서 함량 읽기'는 글자를 자동으로 읽어 칸을 채웁니다. 읽은 값은 꼭 포장과 대조해 고치세요.</p>
     <div id="meds" style="display:grid;gap:12px"></div>
     <div class="row"><button type="button" class="btn ghost" id="addMed">+ 감기약 추가</button></div>
   </section>
@@ -145,7 +151,13 @@ td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:now
       const el = document.createElement('div'); el.className = 'med';
       el.innerHTML = `<div class="mt"><strong>제품 ${L}</strong>${st.meds.length > 2 ? '<button type="button" class="link" data-a="del">삭제</button>' : ''}</div>
         <div class="mtop">
-          <label class="photo" for="f${m.key}">${m.data ? `<img alt="제품 ${L} 사진" src="${m.data}">` : '사진 찍기<br>또는 올리기'}<input type="file" id="f${m.key}" accept="image/*" capture="environment"></label>
+          <div class="pcol">
+            <div class="photo" data-a="drop">${m.data ? `<img alt="제품 ${L} 사진" src="${m.data}">` : '사진 없음<br><span style="font-size:12px">사진을 찍거나<br>파일을 고르세요</span>'}</div>
+            <div class="pbtns">
+              <label class="pbtn main" for="c${m.key}">사진 찍기<input type="file" id="c${m.key}" accept="image/*" capture="environment"></label>
+              <label class="pbtn" for="f${m.key}">${m.data ? '다른 사진 고르기' : '사진 파일 올리기'}<input type="file" id="f${m.key}" accept="image/*"></label>
+            </div>
+          </div>
           <div style="display:grid;gap:10px;min-width:0">
             <div class="row"><button type="button" class="btn ghost" data-a="ocr" ${m.data ? '' : 'hidden'}>사진에서 함량 읽기</button><span class="st ${m.err ? 'err' : ''}">${esc(m.st)}</span></div>
             <label for="n${m.key}">제품명<input type="text" id="n${m.key}" data-f="name" placeholder="예: OO콜드정"></label>
@@ -168,12 +180,18 @@ td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:now
           invalidate();
         });
       });
-      el.querySelector('input[type=file]').addEventListener('change', async e => {
-        const file = e.target.files && e.target.files[0]; if (!file) return;
+      const take = async file => {
+        if (!file) return;
+        if (file.type && !file.type.startsWith('image/')) { m.st = '이미지 파일만 올릴 수 있습니다.'; m.err = true; render(); return; }
         try { m.data = await shrink(file); m.st = "'사진에서 함량 읽기'를 누르거나 직접 입력하세요."; m.err = false; }
-        catch { m.st = '이 사진을 열 수 없습니다. JPG나 PNG로 다시 올려 주세요.'; m.err = true; }
+        catch { m.st = '이 사진을 열 수 없습니다. HEIC 사진이면 JPG로 바꾸거나 화면을 캡처해 다시 올려 주세요.'; m.err = true; }
         render(); invalidate();
-      });
+      };
+      el.querySelectorAll('input[type=file]').forEach(inp => inp.addEventListener('change', e => take(e.target.files && e.target.files[0])));
+      const drop = el.querySelector('[data-a=drop]');
+      ['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('drag'); }));
+      ['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('drag'); }));
+      drop.addEventListener('drop', e => take(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]));
       const del = el.querySelector('[data-a=del]'); if (del) del.onclick = () => { st.meds.splice(i, 1); render(); invalidate(); };
       el.querySelector('[data-a=ocr]').onclick = () => ocr(m);
       box.appendChild(el);
